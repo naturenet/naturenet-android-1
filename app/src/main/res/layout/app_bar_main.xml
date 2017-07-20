@@ -54,11 +54,6 @@
             layout="@layout/dialog_add_observation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
-        <include
-            layout="@layout/dialog_add_design_idea"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+</LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

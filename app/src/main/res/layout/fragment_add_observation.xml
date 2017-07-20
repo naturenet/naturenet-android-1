@@ -47,7 +47,7 @@
         android:orientation="vertical"
         android:weightSum="1">
 
-        <ImageView
+        <AdapterViewFlipper
             android:id="@+id/add_observation_iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -55,6 +55,16 @@
             android:layout_marginBottom="@dimen/add_observation_iv_margin_bottom"
             android:layout_weight="1"
             style="@style/add_observation_iv" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:text="@string/obs_submission_info" />
 
         <LinearLayout
             android:layout_width="match_parent"

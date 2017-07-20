@@ -21,18 +21,6 @@
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-            <android.support.design.widget.VisibilityAwareImageButton
-                android:id="@+id/join_back"
-                android:layout_width="@dimen/btn_collapse_size"
-                android:layout_height="@dimen/btn_collapse_size"
-                android:layout_alignParentStart="true"
-                android:layout_gravity="center_vertical"
-                android:layout_centerVertical="true"
-                android:padding="@dimen/btn_collapse_padding"
-                android:gravity="center"
-                android:clickable="true"
-                style="@style/join_back"/>
-
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"

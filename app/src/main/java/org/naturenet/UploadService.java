@@ -35,6 +35,7 @@ import org.naturenet.data.model.Users;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,59 +51,32 @@ public class UploadService extends IntentService {
 
     private FirebaseDatabase mDatabase;
     private Observation mObservation;
-    private Uri mImageUri;
+    private ArrayList<Target> targets;
+    private ArrayList<Uri> observationUris;
     private Handler mHandler = new Handler();
-    private Target mFirebaseUploadTarget = new Target() {
-
-        final StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("photos").child(UUID.randomUUID().toString());
-
-        @Override
-        public int hashCode() {
-            return mImageUri.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return (obj != null) && (obj instanceof Target) && mImageUri.equals(obj);
-        }
-
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            Timber.d("Bitmap loaded; uploading data stream to Firebase");
-            final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
-            byte[] data = stream.toByteArray();
-            continueWithFirebaseUpload(storageRef.putBytes(data));
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-            Timber.e("Could not load bitmap; uploading original file to Firebase");
-            continueWithFirebaseUpload(storageRef.putFile(mImageUri));
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-            Timber.d("Loading raw bitmap data from %s", mImageUri.getPath());
-        }
-    };
 
     public UploadService() {
         super("UploadService");
         mDatabase = FirebaseDatabase.getInstance();
     }
 
+    /**
+     * Here we retrieve the data that was passed through the intent.
+     * @param intent
+     */
     @Override
     public void onHandleIntent(Intent intent) {
         mObservation = intent.getParcelableExtra(EXTRA_OBSERVATION);
-        mImageUri = intent.getParcelableExtra(EXTRA_URI_PATH);
+        observationUris = intent.getParcelableArrayListExtra(EXTRA_URI_PATH);
+        //initialize targets ArrayList
+        targets = new ArrayList<>();
         uploadObservation();
     }
 
     private void uploadObservation() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String i = mObservation.userId;
-            if (user != null && user.getUid().equals(mObservation.userId)) {
+
+        if (user != null && user.getUid().equals(mObservation.userId)) {
             Timber.d("Preparing image for upload");
             mHandler.post(new Runnable() {
                 @Override
@@ -111,16 +85,21 @@ public class UploadService extends IntentService {
                 }
             });
 
-            final Map<String, String> config = Maps.newHashMap();
-            config.put("cloud_name", "university-of-colorado");
-            Cloudinary cloudinary = new Cloudinary(config);
+            //for each observation uri, we loop and upload the image to either Cloudinary or Firebase
+            for(int j=0; j<observationUris.size(); j++){
+                final Map<String, String> config = Maps.newHashMap();
+                config.put("cloud_name", "university-of-colorado");
+                Cloudinary cloudinary = new Cloudinary(config);
 
-            try {
-                Map results = cloudinary.uploader().unsignedUpload(new File(mImageUri.getPath()), "android-preset", ObjectUtils.emptyMap());
-                continueWithCloudinaryUpload(results);
-            } catch (IOException ex) {
-                Timber.w(ex, "Failed to upload image to Cloudinary");
-                uploadImageWithFirebase();
+                //Try to upload the image to Cloudinary. In case this isn't possible, upload to Firebase Storage.
+                try {
+                    Map results = cloudinary.uploader().unsignedUpload(getContentResolver().openInputStream(observationUris.get(j)), "android-preset", ObjectUtils.emptyMap());
+                    continueWithCloudinaryUpload(results);
+                    targets.add(null);
+                } catch (IOException ex) {
+                    Timber.w(ex, "Failed to upload image to Cloudinary");
+                    uploadImageWithFirebase(observationUris.get(j), j);
+                }
             }
 
         } else {
@@ -139,20 +118,59 @@ public class UploadService extends IntentService {
         writeObservationToFirebase((String)results.get("secure_url"));
     }
 
-    private void uploadImageWithFirebase() {
+    private void uploadImageWithFirebase(final Uri uri, final int targetIndex) {
         Timber.i("Attempting upload to Firebase");
-        mHandler.post(new Runnable() {
+
+        targets.add(new Target() {
+
+            final StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("photos").child(UUID.randomUUID().toString());
+
             @Override
-            public void run() {
-                Picasso.with(UploadService.this)
-                        .load(mImageUri)
-                        .resize(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
-                        .centerInside()
-                        .onlyScaleDown()
-                        .priority(Picasso.Priority.HIGH)
-                        .into(mFirebaseUploadTarget);
+            public int hashCode() {
+                return uri.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return (obj != null) && (obj instanceof Target) && uri.equals(obj);
+            }
+
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                Timber.d("Bitmap loaded; uploading data stream to Firebase");
+                final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+                byte[] data = stream.toByteArray();
+                continueWithFirebaseUpload(storageRef.putBytes(data));
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                Timber.e("Could not load bitmap; uploading original file to Firebase");
+                continueWithFirebaseUpload(storageRef.putFile(uri));
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                Timber.d("Loading raw bitmap data from %s", uri.getPath());
             }
         });
+
+        if(targets.get(targetIndex) != null){
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Picasso.with(UploadService.this)
+                            .load(uri)
+                            .resize(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
+                            .centerInside()
+                            .onlyScaleDown()
+                            .priority(Picasso.Priority.HIGH)
+                            .into(targets.get(targetIndex));
+                }
+            });
+        }
+
     }
 
     private void continueWithFirebaseUpload(UploadTask uploadTask) {
@@ -162,18 +180,18 @@ public class UploadService extends IntentService {
                 UploadService.this.writeObservationToFirebase(taskSnapshot.getDownloadUrl().toString());
             }
         })
-        .addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception ex) {
-                Timber.w(ex, "Image upload task failed: %s", ex.getMessage());
-                mHandler.post(new Runnable() {
+                .addOnFailureListener(new OnFailureListener() {
                     @Override
-                    public void run() {
-                        Toast.makeText(UploadService.this, getString(R.string.image_upload_error), Toast.LENGTH_LONG).show();
+                    public void onFailure(@NonNull Exception ex) {
+                        Timber.w(ex, "Image upload task failed: %s", ex.getMessage());
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(UploadService.this, getString(R.string.image_upload_error), Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     private void writeObservationToFirebase(String imageUrl) {

@@ -140,7 +140,8 @@
 
         <activity android:name=".ui.IdeaDetailsActivity" />
         <activity android:name=".ui.AddDesignIdeaActivity" />
-        <activity android:name=".ui.AddProjectActivity"></activity>
+        <activity android:name=".ui.AddProjectActivity" />
+        <activity android:name=".ui.ImagePicker"></activity>
     </application>
 
 </manifest>

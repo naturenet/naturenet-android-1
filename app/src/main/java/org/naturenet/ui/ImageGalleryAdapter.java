@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso;
 import org.naturenet.R;
 import org.naturenet.util.NatureNetUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,10 +22,15 @@ import java.util.List;
 public class ImageGalleryAdapter extends BaseAdapter {
     private Context mContext;
     private List<Uri> mImages;
+    private ArrayList<Integer> selectedImages;
+    Picasso picasso;
 
     public ImageGalleryAdapter(Context c, List<Uri> images) {
         mContext = c;
         mImages = images;
+        selectedImages = new ArrayList<>();
+        picasso = Picasso.with(mContext);
+        picasso.setIndicatorsEnabled(false);
     }
 
     @Override
@@ -49,14 +55,26 @@ public class ImageGalleryAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.gallery_gv_item, parent, false);
         }
         ImageView imageView = (ImageView) convertView.findViewById(R.id.gallery_iv);
-        Picasso.with(mContext)
-                .load(mImages.get(position))
+        //Check to see if the current view we're trying to load isn't a selected image
+        if(!selectedImages.contains(position))
+            imageView.setBackgroundResource(0);
+        else
+            imageView.setBackgroundResource(R.drawable.border_selected_image);
+
+        picasso.load(mImages.get(position))
                 .error(R.drawable.no_image)
                 .fit()
                 .centerCrop()
-                .tag(NatureNetUtils.PICASSO_TAGS.PICASSO_TAG_GALLERY)
                 .into(imageView);
 
         return convertView;
+    }
+
+    public void addSelectedImage(int index){
+        selectedImages.add(index);
+    }
+
+    public void removeSelectedImage(int index){
+        selectedImages.remove(Integer.valueOf(index));
     }
 }

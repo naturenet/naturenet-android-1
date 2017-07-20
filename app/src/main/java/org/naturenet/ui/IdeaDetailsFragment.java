@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Comment;
@@ -45,13 +46,14 @@ public class IdeaDetailsFragment extends Fragment {
     private Site site;
     private DatabaseReference dbRef;
     private IdeaDetailsActivity ideaAct;
-    private ImageView userPic, likeButton, dislikeButton;
+    private ImageView userPic, likeButton, dislikeButton, status;
     private TextView userName, userAffiliation, submittedDate, ideaContent, likesNum, dislikeNum, sendButton;
     private ListView commentList;
     private EditText commentText;
     private Collection list;
     private int likes = 0;
     private int dislikes = 0;
+    private Picasso picasso;
 
     public IdeaDetailsFragment() {
         // Required empty public constructor
@@ -69,6 +71,8 @@ public class IdeaDetailsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        picasso = Picasso.with(ideaAct);
+        picasso.setIndicatorsEnabled(false);
         ideaAct = (IdeaDetailsActivity) this.getActivity();
         dbRef = FirebaseDatabase.getInstance().getReference();
         userPic = (ImageView) ideaAct.findViewById(R.id.idea_submitter_pic);
@@ -83,6 +87,7 @@ public class IdeaDetailsFragment extends Fragment {
         commentList = (ListView) ideaAct.findViewById(R.id.design_idea_comment_lv);
         sendButton = (TextView) ideaAct.findViewById(R.id.design_idea_comment_send);
         commentText = (EditText) ideaAct.findViewById(R.id.design_idea_comment);
+        status = (ImageView) ideaAct.findViewById(R.id.idea_status_iv);
         idea = ideaAct.idea;
 
         ideaContent.setText(ideaAct.idea.content);
@@ -93,6 +98,23 @@ public class IdeaDetailsFragment extends Fragment {
 
         //set the number of likes
         setLikes();
+
+        if(idea.status != null) {
+            switch (idea.status) {
+                case "developing":
+                    picasso.load(R.drawable.developing).into(status);
+                    break;
+                case "testing":
+                    picasso.load(R.drawable.testing).into(status);
+                    break;
+                case "done":
+                    picasso.load(R.drawable.completed).into(status);
+                    break;
+                default:
+                    picasso.load(R.drawable.discussing).into(status);
+                    break;
+            }
+        }
 
         if(ideaAct.signed_user!=null){
             //check to see if the current user has liked the design idea

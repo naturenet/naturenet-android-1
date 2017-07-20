@@ -46,7 +46,9 @@ public class NatureNetUtils {
     }
 
     public static void showUserAvatar(final Context context, final ImageView view, final String avatarUrl) {
-        Picasso.with(context).load(Strings.emptyToNull(avatarUrl)).transform(mAvatarTransform)
+        Picasso p = Picasso.with(context);
+        p.setIndicatorsEnabled(false);
+        p.load(Strings.emptyToNull(avatarUrl)).transform(mAvatarTransform)
                 .placeholder(R.drawable.default_avatar).error(R.drawable.default_avatar).noFade().fit().into(view);
     }
 

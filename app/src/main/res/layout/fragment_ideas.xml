@@ -14,64 +14,31 @@
         android:layout_alignParentStart="true"
         android:id="@+id/floating_buttons" />-->
 
-    <ImageView
-        android:id="@+id/imageView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="15dp"
-        app:srcCompat="@drawable/fb_add_design_idea"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:id="@+id/ideas_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/imageView4"
-        android:layout_alignTop="@+id/imageView4"
-        android:layout_toRightOf="@+id/imageView4"
-        android:textColor="@color/colorButton"
-        android:gravity="center"
-        android:layout_marginLeft="5dp"
-        android:text="@string/design_ideas_title"
-        android:textSize="24sp" />
-
-    <TextView
-        android:id="@+id/design_ideas_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/dialog_add_design_idea_tv_para1"
-        android:layout_below="@+id/imageView4"
-        android:layout_alignLeft="@+id/imageView4"
-        android:layout_alignStart="@+id/imageView4" />
-
     <TextView
         android:id="@+id/design_ideas_recent_cont_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/design_ideas_info"
-        android:layout_alignStart="@+id/design_ideas_info"
-        android:layout_below="@+id/design_ideas_info"
         android:layout_marginTop="12dp"
-        android:textStyle="bold"
+        android:text="Recent Ideas"
+        android:textSize="20sp"
         android:textColor="@color/colorButton"
-        android:text="@string/recent_observations" />
+        android:textStyle="bold"
+        android:layout_below="@+id/ideasSearchBar"
+        android:layout_alignLeft="@+id/design_ideas_lv"
+        android:layout_alignStart="@+id/design_ideas_lv" />
 
     <ListView
         android:id="@+id/design_ideas_lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/design_ideas_recent_cont_title"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="5dp" />
+        android:layout_below="@+id/design_ideas_recent_cont_title" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabAddIdea"
@@ -86,4 +53,19 @@
         android:src="@drawable/ic_add_white_24dp"
         app:borderWidth="0dp"
         app:fabSize="auto" />
+
+    <EditText
+        android:id="@+id/ideasSearchBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:textSize="14sp"
+        android:gravity="bottom"
+        android:hint="Search"
+        android:inputType="textPersonName"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/design_ideas_lv"
+        android:layout_alignEnd="@+id/design_ideas_lv"
+        android:layout_alignLeft="@+id/design_ideas_recent_cont_title"
+        android:layout_alignStart="@+id/design_ideas_recent_cont_title" />
 </RelativeLayout>

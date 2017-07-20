@@ -57,6 +57,7 @@ public class CommunitiesFragment extends Fragment {
     private int acesMax, awsMax, elseMax, rcncMax;
     private boolean isDataLoaded;
     private TextWatcher textWatcher;
+    private ArrayList<Users> users;
 
     MainActivity main;
     TextView toolbar_title;
@@ -77,45 +78,159 @@ public class CommunitiesFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-        //get all the users
-        mFirebase.child(Users.NODE_NAME).orderByChild("display_name").addListenerForSingleValueEvent(new ValueEventListener() {
+        //initializations
+        acesList = new ArrayList<>();
+        rcncList = new ArrayList<>();
+        awsList = new ArrayList<>();
+        elseList = new ArrayList<>();
+        rcncResults = new ArrayList<>();
+        awsResults = new ArrayList<>();
+        elseResults = new ArrayList<>();
+        acesResults = new ArrayList<>();
+        userListMap = new HashMap<>();
+        numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = INITIAL_USERS_COUNT;
+        acesMax = awsMax = elseMax = rcncMax = 0;
+        resultsMap = new HashMap<>();
+        isDataLoaded = false;
+        users = new ArrayList<>();
+
+        //Check to see if we're connected to the Internet.
+        if(!isConnectedToInternet())
+            Toast.makeText(main, R.string.no_network, Toast.LENGTH_SHORT).show();
+
+        //Get and set user data. If this fails, query again from here.
+        if(!getUserData()){
+
+            mFirebase.child(Users.NODE_NAME).orderByChild("display_name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    acesList.clear();
+                    awsList.clear();
+                    rcncList.clear();
+                    elseList.clear();
+
+                    //get all users and store in their respective ArrayList
+                    for(DataSnapshot user: dataSnapshot.getChildren()){
+                        Users u = user.getValue(Users.class);
+
+                        switch (u.affiliation){
+                            case ELSEWHERE: elseList.add(u);
+                                break;
+                            case ACES: acesList.add(u);
+                                break;
+                            case ANACOSTIA: awsList.add(u);
+                                break;
+                            case RCNC: rcncList.add(u);
+                                break;
+                            default: elseList.add(u);
+                        }
+                    }
+
+                    acesMax = acesList.size();
+                    awsMax = awsList.size();
+                    elseMax = elseList.size();
+                    rcncMax = rcncList.size();
+
+                    //set the Users in the ExpandableListView
+                    setUsers(acesList, awsList, elseList, rcncList, INITIAL_USERS_COUNT, acesMax, awsMax, elseMax, rcncMax);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(main, "There's been an error retrieving the data.", Toast.LENGTH_SHORT).show();
+                    isDataLoaded = false;
+                }
+            });
+        }
+
+
+        /*
+            Click listener for the ExpandableListView
+         */
+        mCommunitiesListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                //get all users and store in their respective ArrayList
-                for(DataSnapshot user: dataSnapshot.getChildren()){
-                    Users u = user.getValue(Users.class);
+            public boolean onChildClick(ExpandableListView expandableListView, View view, int listPos, int expandedListPos, long l) {
+                Intent userIntent = new Intent(main, UsersDetailActivity.class);
 
-                    switch (u.affiliation){
-                        case ELSEWHERE: elseList.add(u);
+                //if the user has entered a search query
+                if(activeSearch){
+                    userIntent.putExtra(USER_EXTRA, mAdapter.getChild(listPos, expandedListPos));
+                    startActivity(userIntent);
+                }else{  //the user hasn't entered a search query
+                    //determine which section was clicked
+                    switch (listPos){
+                        case 0:
+                            //if show more button has been clicked (last child view), update the user list
+                            if(expandedListPos == numToShowAces-1)
+                                updateUserList(acesList, listPos);
+                            else{
+                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
+                                startActivity(userIntent);
+                            }
                             break;
-                        case ACES: acesList.add(u);
+                        case 1:
+                            if(expandedListPos == numToShowAws-1)
+                                updateUserList(awsList, listPos);
+                            else{
+                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
+                                startActivity(userIntent);
+                            }
                             break;
-                        case ANACOSTIA: awsList.add(u);
+                        case 2:
+                            if(expandedListPos == numToShowElse-1)
+                                updateUserList(elseList, listPos);
+                            else{
+                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
+                                startActivity(userIntent);
+                            }
                             break;
-                        case RCNC: rcncList.add(u);
+                        case 3:
+                            if(expandedListPos == numToShowRcnc-1)
+                                updateUserList(rcncList, listPos);
+                            else{
+                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
+                                startActivity(userIntent);
+                            }
                             break;
-                        default: elseList.add(u);
                     }
                 }
 
-                acesMax = acesList.size();
-                awsMax = awsList.size();
-                elseMax = elseList.size();
-                rcncMax = rcncList.size();
-
-                //set the Users in the ExpandableListView
-                setUsers(acesList, awsList, elseList, rcncList, INITIAL_USERS_COUNT, acesMax, awsMax, elseMax, rcncMax);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(main, "There's been an error retrieving the data.", Toast.LENGTH_SHORT).show();
-                isDataLoaded = false;
+                return false;
             }
         });
+
+    }
+
+    /**
+     * This method retrieves user data from the Singleton instance for quick loading. Also, the text watcher is set for user queries.
+     * @return - boolean reflecting whether or not the user data was successfully retrieved.
+     */
+    private boolean getUserData(){
+
+        users = main.userList;
+
+        for(Users u: users){
+            switch (u.affiliation){
+                case ELSEWHERE: elseList.add(u);
+                    break;
+                case ACES: acesList.add(u);
+                    break;
+                case ANACOSTIA: awsList.add(u);
+                    break;
+                case RCNC: rcncList.add(u);
+                    break;
+                default: elseList.add(u);
+            }
+        }
+
+        acesMax = acesList.size();
+        awsMax = awsList.size();
+        elseMax = elseList.size();
+        rcncMax = rcncList.size();
 
         //Create TextWatcher that will handle any search queries.
         textWatcher = new TextWatcher() {
@@ -189,99 +304,24 @@ public class CommunitiesFragment extends Fragment {
                         mCommunitiesListView.expandGroup(3);
 
                     }
-                    //If data was never set in the adapter, display a message explaining this. Also, remove "this" TextChangedListener so we don't keep displaying
-                    //after every character that's entered
-                }else{
-                    Toast.makeText(main, "User data may not have been loaded. Make sure you are connected to the Internet and try again.", Toast.LENGTH_LONG).show();
-                    searchText.removeTextChangedListener(this);
                 }
             }
         };
 
         //Set TextChangedListener
         searchText.addTextChangedListener(textWatcher);
-    }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        if(users.size() > 0){
+            //set the Users in the ExpandableListView
+            setUsers(acesList, awsList, elseList, rcncList, INITIAL_USERS_COUNT, acesMax, awsMax, elseMax, rcncMax);
+            isDataLoaded = true;
+        }
 
-        //initializations
-        acesList = new ArrayList<>();
-        rcncList = new ArrayList<>();
-        awsList = new ArrayList<>();
-        elseList = new ArrayList<>();
-        rcncResults = new ArrayList<>();
-        awsResults = new ArrayList<>();
-        elseResults = new ArrayList<>();
-        acesResults = new ArrayList<>();
-        userListMap = new HashMap<>();
-        numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = INITIAL_USERS_COUNT;
-        acesMax = awsMax = elseMax = rcncMax = 0;
-        resultsMap = new HashMap<>();
-        isDataLoaded = false;
-
-        if(!isConnectedToInternet())
-            Toast.makeText(main, R.string.no_network, Toast.LENGTH_SHORT).show();
-
-        /*
-            Click listener for the ExpandableListView
-         */
-        mCommunitiesListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView expandableListView, View view, int listPos, int expandedListPos, long l) {
-                Intent userIntent = new Intent(main, UsersDetailActivity.class);
-
-                //if the user has entered a search query
-                if(activeSearch){
-                    userIntent.putExtra(USER_EXTRA, mAdapter.getChild(listPos, expandedListPos));
-                    startActivity(userIntent);
-                }else{  //the user hasn't entered a search query
-                    //determine which section was clicked
-                    switch (listPos){
-                        case 0:
-                            //if show more button has been clicked (last child view), update the user list
-                            if(expandedListPos == numToShowAces-1)
-                                updateUserList(acesList, listPos);
-                            else{
-                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
-                                startActivity(userIntent);
-                            }
-                            break;
-                        case 1:
-                            if(expandedListPos == numToShowAws-1)
-                                updateUserList(awsList, listPos);
-                            else{
-                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
-                                startActivity(userIntent);
-                            }
-                            break;
-                        case 2:
-                            if(expandedListPos == numToShowElse-1)
-                                updateUserList(elseList, listPos);
-                            else{
-                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
-                                startActivity(userIntent);
-                            }
-                            break;
-                        case 3:
-                            if(expandedListPos == numToShowRcnc-1)
-                                updateUserList(rcncList, listPos);
-                            else{
-                                userIntent.putExtra(USER_EXTRA, mAdapterOrig.getChild(listPos, expandedListPos));
-                                startActivity(userIntent);
-                            }
-                            break;
-                    }
-                }
-
-                return false;
-            }
-        });
+        return isDataLoaded;
 
     }
 
-    /*
+    /**
         This method is called whenever the user clicks on the "Show More" button under a group.
         It accepts the list that will be updated (list) and the position of the group (listPos)
      */
@@ -345,7 +385,7 @@ public class CommunitiesFragment extends Fragment {
 
     }
 
-    /*
+    /**
         This method is called when we first populate the user list.
         It accepts each ArrayList for each site and the number of users to display (numShow).
      */
@@ -364,12 +404,11 @@ public class CommunitiesFragment extends Fragment {
         mCommunitiesListView.expandGroup(2);
         mCommunitiesListView.expandGroup(3);
 
-        //If we get this far, we know we actually pulled data from Firebase. So, we set our variable to true and add a TextChangedListener to our EditText.
         isDataLoaded = true;
         searchText.addTextChangedListener(textWatcher);
     }
 
-    /*
+    /**
         This method is used to set the search results of queries that the user makes.
         It accepts each ArrayList for each site.
      */
@@ -389,7 +428,7 @@ public class CommunitiesFragment extends Fragment {
         mCommunitiesListView.expandGroup(3);
     }
 
-    /*
+    /**
         This method detects if we are connected to the internet.
      */
     private boolean isConnectedToInternet(){

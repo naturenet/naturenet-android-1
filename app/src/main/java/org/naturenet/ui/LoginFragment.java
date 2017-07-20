@@ -89,6 +89,9 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        /*
+            When user selects to Join from the login screen.
+         */
         join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,5 +124,11 @@ public class LoginFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        join.setVisibility(View.VISIBLE);
     }
 }

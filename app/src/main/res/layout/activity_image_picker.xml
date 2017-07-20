@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.naturenet.ui.ImagePicker">
+
+
+    <TextView
+        android:id="@+id/selectButton"
+        style="@style/dialog_add_observation_tv_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/imageGridView"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/imageGridView"
+        android:layout_gravity="right"
+        android:layout_marginTop="10dp"
+        android:textSize="18sp"
+        tools:layout_editor_absoluteX="326dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <GridView
+        android:id="@+id/imageGridView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/selectButton"
+        android:layout_above="@+id/loadMoreButton"
+        android:layout_marginBottom="5dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:horizontalSpacing="@dimen/dialog_add_observation_gv_horizontal_spacing"
+        android:numColumns="@integer/dialog_add_observation_gv_column_count"
+        android:verticalSpacing="@dimen/dialog_add_observation_gv_vertical_spacing" />
+
+    <TextView
+        android:id="@+id/loadMoreButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="16sp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/load_more"
+        android:textColor="@color/colorPrimary" />
+
+
+</RelativeLayout>
