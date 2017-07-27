@@ -97,7 +97,28 @@ public class AddObservationFragment extends Fragment {
         projectsList = new HashMap<>();
         resultsMap = new HashMap<>();
         activeSearch = false;
+        p = add.p;
 
+        //check to see if the user is submitting to a specific project
+        if(p != null){
+            project.setText(p.name);
+            selectedProjectId = p.id;
+        }else{  //if not, set project as default
+            selectedProjectId = DEFAULT_PROJECT_ID;
+
+            FirebaseDatabase.getInstance().getReference(Project.NODE_NAME).child(DEFAULT_PROJECT_ID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Project p = dataSnapshot.getValue(Project.class);
+                    project.setText(String.format(getString(R.string.add_observation_default_project), p.name));
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Timber.e(databaseError.toException(), "Could not read default project");
+                }
+            });
+        }
 
         /*
             Populate the list of Projects.
@@ -357,19 +378,6 @@ public class AddObservationFragment extends Fragment {
             }
         });
 
-        selectedProjectId = DEFAULT_PROJECT_ID;
-        FirebaseDatabase.getInstance().getReference(Project.NODE_NAME).child(DEFAULT_PROJECT_ID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Project p = dataSnapshot.getValue(Project.class);
-                project.setText(String.format(getString(R.string.add_observation_default_project), p.name));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Timber.e(databaseError.toException(), "Could not read default project");
-            }
-        });
     }
 
     /*

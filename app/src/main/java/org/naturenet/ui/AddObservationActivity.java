@@ -15,6 +15,7 @@ import org.naturenet.NatureNetApplication;
 import org.naturenet.R;
 import org.naturenet.UploadService;
 import org.naturenet.data.model.Observation;
+import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Users;
 
 import java.util.ArrayList;
@@ -28,11 +29,13 @@ public class AddObservationActivity extends AppCompatActivity {
     public static final String EXTRA_USER = "signed_user";
     public static final String EXTRA_LATITUDE = "latitude";
     public static final String EXTRA_LONGITUDE = "longitude";
+    public static final String EXTRA_PROJECT = "project";
 
     ArrayList<Uri> observationPaths;
     Observation newObservation;
     private Disposable mUserAuthSubscription;
     Users signed_user;
+    Project p;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +68,10 @@ public class AddObservationActivity extends AppCompatActivity {
             newObservation.siteId = user.affiliation;
         }
         observationPaths = getIntent().getParcelableArrayListExtra(EXTRA_IMAGE_PATH);
+
+        if(getIntent().getParcelableExtra(EXTRA_PROJECT) != null){
+            p = getIntent().getParcelableExtra(EXTRA_PROJECT);
+        }
 
         getFragmentManager().
                 beginTransaction().

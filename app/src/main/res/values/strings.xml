@@ -182,6 +182,7 @@
     <string name="no_timestamp">No Timestamp</string>
     <string name="unknown_user">A NatureNet User</string>
     <!-- Messages -->
+    <string name="permission_rejected">Permissions were denied. You may grant permissions in your Application Settings.</string>
     <string name="error_message_firebase_read">The read failed: </string>
     <string name="error_message_firebase_create">Failed to create: </string>
     <string name="error_message_firebase_login">Login Unsuccessful: </string>

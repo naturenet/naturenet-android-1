@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Observation previewSelectedObservation;
     List<String> ids, names;
     DatabaseReference mFirebase;
-    Users signed_user;
+    static Users signed_user;
     Site user_home_site;
     DrawerLayout drawer;
     Toolbar toolbar;
@@ -122,9 +122,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     LinearLayout dialog_add_observation;
     GridView gridview;
     ImageView add_observation_cancel, gallery_item, add_observation_button;
-    List<Uri> recentImageGallery, observationPaths;
+    List<Uri> recentImageGallery;
     ArrayList<Uri> selectedImages;
-    double latValue, longValue;
+    static double latValue, longValue;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -308,7 +308,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 Picasso.with(MainActivity.this).cancelTag(ImageGalleryAdapter.class.getSimpleName());
-                observationPaths = selectedImages;
                 setGallery();
                 goToAddObservationActivity();
             }
@@ -317,36 +316,44 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGallery();
-                select.setVisibility(View.GONE);
 
-                try {
-                    startActivityForResult(cameraPhoto.takePhotoIntent(), REQUEST_CODE_CAMERA);
-                } catch (IOException e) {
-                    Toast.makeText(MainActivity.this, "Something Wrong while taking photo", Toast.LENGTH_SHORT).show();
-                }
+                if(isStoragePermitted()){
+                    setGallery();
+                    select.setVisibility(View.GONE);
+
+                    try {
+                        startActivityForResult(cameraPhoto.takePhotoIntent(), REQUEST_CODE_CAMERA);
+                    } catch (IOException e) {
+                        Toast.makeText(MainActivity.this, "Something Wrong while taking photo", Toast.LENGTH_SHORT).show();
+                    }
+                }else
+                    Toast.makeText(MainActivity.this, R.string.permission_rejected, Toast.LENGTH_LONG).show();
             }
         });
 
         gallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGallery();
-                select.setVisibility(View.GONE);
 
-                //Check to see if the user is on API 18 or above.
-                if(usingApiEighteenAndAbove()){
-                    Intent intent = new Intent();
-                    intent.setType("image/*");
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(Intent.createChooser(intent,"Select Picture"), GALLERY_IMAGES);
-                }else{
-                    //If not on 18 or above, go to the custom Gallery Activity
-                    Intent intent = new Intent(getApplicationContext(), ImagePicker.class);
-                    startActivityForResult(intent, IMAGE_PICKER_RESULTS);
-                }
+                if(isStoragePermitted()){
+                    setGallery();
+                    select.setVisibility(View.GONE);
+                    selectedImages.clear();
 
+                    //Check to see if the user is on API 18 or above.
+                    if(usingApiEighteenAndAbove()){
+                        Intent intent = new Intent();
+                        intent.setType("image/*");
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        startActivityForResult(Intent.createChooser(intent,"Select Picture"), GALLERY_IMAGES);
+                    }else{
+                        //If not on 18 or above, go to the custom Gallery Activity
+                        Intent intent = new Intent(getApplicationContext(), ImagePicker.class);
+                        startActivityForResult(intent, IMAGE_PICKER_RESULTS);
+                    }
+                }else
+                    Toast.makeText(MainActivity.this, R.string.permission_rejected, Toast.LENGTH_LONG).show();
 
             }
         });
@@ -744,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case REQUEST_CODE_CAMERA: {
                 if (resultCode == MainActivity.RESULT_OK) {
                     Timber.d("Camera Path: %s", cameraPhoto.getPhotoPath());
-                    observationPath = Uri.fromFile(new File(cameraPhoto.getPhotoPath()));
+                    selectedImages.add(Uri.fromFile(new File(cameraPhoto.getPhotoPath())));
                     cameraPhoto.addToGallery();
                     setGallery();
                     goToAddObservationActivity();
@@ -849,5 +856,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public boolean usingApiEighteenAndAbove(){
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+    }
+
+    private boolean isStoragePermitted(){
+
+        boolean isPermissionGiven = false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                isPermissionGiven = true;
+            }
+        }
+
+        return isPermissionGiven;
     }
 }
