@@ -2,6 +2,7 @@ package org.naturenet.ui;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.naturenet.DeleteTokenService;
 import org.naturenet.NatureNetApplication;
 import org.naturenet.R;
 
@@ -76,6 +78,10 @@ public class LoginFragment extends Fragment {
                                 pd.dismiss();
                                 signIn.setVisibility(View.GONE);
                                 log.continueAsSignedUser();
+
+                                //start service to delete and recreate notification token whenever a new user signs in
+                                Intent tokenIntent = new Intent(getActivity(), DeleteTokenService.class);
+                                getActivity().startService(tokenIntent);
                             } else {
                                 pd.dismiss();
                                 signIn.setVisibility(View.VISIBLE);

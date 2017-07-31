@@ -15,7 +15,6 @@ import com.squareup.picasso.Picasso;
 
 import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Site;
-import org.naturenet.data.model.TimestampedData;
 import org.naturenet.data.model.Users;
 import org.naturenet.util.ForestFire;
 
@@ -39,6 +38,7 @@ public class NatureNetApplication extends MultiDexApplication {
             if (firebaseAuth.getCurrentUser() != null) {
                 final String uid = firebaseAuth.getCurrentUser().getUid();
                 Timber.i("User logged in: %s", uid);
+                Toast.makeText(getApplicationContext(),"Welcome!", Toast.LENGTH_SHORT).show();
                 FirebaseDatabase.getInstance().getReference(Users.NODE_NAME).child(uid).keepSynced(true);
                 FirebaseDatabase.getInstance().getReference(Users.NODE_NAME).child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -47,7 +47,6 @@ public class NatureNetApplication extends MultiDexApplication {
                         usersBehaviorSubject.onNext(Optional.fromNullable(user));
                         if (user != null) {
                             Timber.d("Loaded profile data for %s" + uid);
-                            Toast.makeText(getApplicationContext(), String.format("Welcome, %s!", user.displayName), Toast.LENGTH_SHORT).show();
                         } else {
                             Timber.w("Could not load profile for user %s, may be during account creation", uid);
                         }
