@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.naturenet.DeleteTokenService;
 import org.naturenet.R;
 import org.naturenet.data.model.Users;
 import org.naturenet.data.model.UsersPrivate;
@@ -134,6 +135,9 @@ public class JoinActivity extends AppCompatActivity {
                                                     join.setVisibility(View.VISIBLE);
                                                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.join_success_message), Toast.LENGTH_SHORT).show();
                                                     continueAsSignedUser(user);
+                                                    //start service to delete and recreate notification token whenever a new user signs in
+                                                    Intent tokenIntent = new Intent(JoinActivity.this, DeleteTokenService.class);
+                                                    startService(tokenIntent);
                                                 } else {
                                                     Timber.e(task.getException(), "Failed to authenticate with new account for %s", id);
                                                     pd.dismiss();
@@ -214,11 +218,7 @@ public class JoinActivity extends AppCompatActivity {
         resultIntent.putExtra(EXTRA_NEW_USER, createdUser);
         setResult(Activity.RESULT_OK, resultIntent);
         clearResources();
-        //Create intent to start MainActivity. Set flags to clear backstack.
-        Intent doneIntent = new Intent(this, MainActivity.class);
-        doneIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(doneIntent);
-        overridePendingTransition(R.anim.stay, R.anim.slide_down);
+        finish();
     }
 
     @Override

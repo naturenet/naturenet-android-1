@@ -8,9 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Picasso;
-
 import org.naturenet.R;
+import org.naturenet.util.NatureNetUtils;
 
 import java.util.ArrayList;
 
@@ -19,10 +18,12 @@ public class AddObservationImageAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<Uri> images;
+    private boolean fromCamera;
 
-    public AddObservationImageAdapter(Context mContext, ArrayList<Uri> images) {
+    public AddObservationImageAdapter(Context mContext, ArrayList<Uri> images, boolean fromCamera) {
         this.mContext = mContext;
         this.images = images;
+        this.fromCamera = fromCamera;
     }
 
     @Override
@@ -50,7 +51,10 @@ public class AddObservationImageAdapter extends BaseAdapter {
 
         ImageView iv = (ImageView) view.findViewById(R.id.image_for_flipper);
 
-        Picasso.with(mContext).load(images.get(i)).into(iv);
+        if(fromCamera)
+            NatureNetUtils.showImage(mContext, iv, images.get(i), false, fromCamera);
+        else
+            NatureNetUtils.showImage(mContext, iv, images.get(i), false, fromCamera);
 
         return view;
 

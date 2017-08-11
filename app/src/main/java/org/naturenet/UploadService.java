@@ -13,8 +13,10 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.common.collect.Maps;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,7 +35,6 @@ import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Users;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -54,6 +55,9 @@ public class UploadService extends IntentService {
     private ArrayList<Target> targets;
     private ArrayList<Uri> observationUris;
     private Handler mHandler = new Handler();
+    private Uri profilePicUri;
+    private String userId;
+    private boolean isProfilePic = false;
 
     public UploadService() {
         super("UploadService");
@@ -66,11 +70,39 @@ public class UploadService extends IntentService {
      */
     @Override
     public void onHandleIntent(Intent intent) {
-        mObservation = intent.getParcelableExtra(EXTRA_OBSERVATION);
-        observationUris = intent.getParcelableArrayListExtra(EXTRA_URI_PATH);
-        //initialize targets ArrayList
-        targets = new ArrayList<>();
-        uploadObservation();
+
+        //check to see if we're getting an observation
+        if(intent.getParcelableExtra(EXTRA_OBSERVATION) != null){
+            mObservation = intent.getParcelableExtra(EXTRA_OBSERVATION);
+            observationUris = intent.getParcelableArrayListExtra(EXTRA_URI_PATH);
+            //initialize targets ArrayList
+            targets = new ArrayList<>();
+            uploadObservation();
+        }else {
+            profilePicUri = intent.getParcelableExtra("profile_pic");
+            userId = intent.getStringExtra("id");
+            targets = new ArrayList<>();
+            isProfilePic = true;
+            uploadProfilePic();
+        }
+
+    }
+
+
+    private void uploadProfilePic(){
+
+        final Map<String, String> config = Maps.newHashMap();
+        config.put("cloud_name", "university-of-colorado");
+        Cloudinary cloudinary = new Cloudinary(config);
+
+        //Try to upload the image to Cloudinary. In case this isn't possible, upload to Firebase Storage.
+        try {
+            Map results = cloudinary.uploader().unsignedUpload(getContentResolver().openInputStream(profilePicUri), "android-preset", ObjectUtils.emptyMap());
+            continueWithCloudinaryUpload(results);
+        } catch (IOException ex) {
+            Timber.w(ex, "Failed to upload image to Cloudinary");
+            uploadImageWithFirebase(profilePicUri, 0);
+        }
     }
 
     private void uploadObservation() {
@@ -195,32 +227,42 @@ public class UploadService extends IntentService {
     }
 
     private void writeObservationToFirebase(String imageUrl) {
-        final String id = mDatabase.getReference(Observation.NODE_NAME).push().getKey();
-        mObservation.id = id;
-        mObservation.data.image = imageUrl;
-        mDatabase.getReference(Observation.NODE_NAME).child(id).setValue(mObservation, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError != null) {
-                    Timber.w(databaseError.toException(), "Failed to write observation to database: %s", databaseError.getMessage());
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(UploadService.this, getString(R.string.dialog_add_observation_error), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    mDatabase.getReference(Users.NODE_NAME).child(mObservation.userId).child(LATEST_CONTRIBUTION).setValue(ServerValue.TIMESTAMP);
-                    mDatabase.getReference(Project.NODE_NAME).child(mObservation.projectId).child(LATEST_CONTRIBUTION).setValue(ServerValue.TIMESTAMP);
-                    new GeoFire(mDatabase.getReference("geo")).setLocation(mObservation.id, new GeoLocation(mObservation.getLatitude(), mObservation.getLongitude()));
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(UploadService.this, getString(R.string.dialog_add_observation_success), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+        if(!isProfilePic){
+            final String id = mDatabase.getReference(Observation.NODE_NAME).push().getKey();
+            mObservation.id = id;
+            mObservation.data.image = imageUrl;
+            mDatabase.getReference(Observation.NODE_NAME).child(id).setValue(mObservation, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError != null) {
+                        Timber.w(databaseError.toException(), "Failed to write observation to database: %s", databaseError.getMessage());
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(UploadService.this, getString(R.string.dialog_add_observation_error), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        mDatabase.getReference(Users.NODE_NAME).child(mObservation.userId).child(LATEST_CONTRIBUTION).setValue(ServerValue.TIMESTAMP);
+                        mDatabase.getReference(Project.NODE_NAME).child(mObservation.projectId).child(LATEST_CONTRIBUTION).setValue(ServerValue.TIMESTAMP);
+                        new GeoFire(mDatabase.getReference("geo")).setLocation(mObservation.id, new GeoLocation(mObservation.getLatitude(), mObservation.getLongitude()));
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(UploadService.this, getString(R.string.dialog_add_observation_success), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }else{
+            mDatabase.getReference(Users.NODE_NAME).child(userId).child("avatar").setValue(imageUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Toast.makeText(UploadService.this, "Profile picture updated.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
     }
 }

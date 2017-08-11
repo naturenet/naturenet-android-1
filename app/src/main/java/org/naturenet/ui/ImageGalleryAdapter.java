@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 
 import org.naturenet.R;
-import org.naturenet.util.NatureNetUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +49,7 @@ public class ImageGalleryAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        //check to see if the view is to be recycled
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.gallery_gv_item, parent, false);
@@ -70,11 +70,21 @@ public class ImageGalleryAdapter extends BaseAdapter {
         return convertView;
     }
 
+    /**
+     * This method stores the index of the selected image within this adapter.
+     * @param index - the index of the selected image.
+     */
     public void addSelectedImage(int index){
         selectedImages.add(index);
     }
 
+    /**
+     * This method removes the index of the selected image from the adapter.
+     * @param index - the index of the unselected image.
+     */
     public void removeSelectedImage(int index){
         selectedImages.remove(Integer.valueOf(index));
+        //call notifyDataSetChanged() so the views are refreshed and the de-selected image is reflected on the screen
+        notifyDataSetChanged();
     }
 }

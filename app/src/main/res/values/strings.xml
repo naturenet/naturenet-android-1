@@ -190,7 +190,6 @@
     <string name="no_connection_warning">Please check your network connection. There may be a delay </string>
     <string name="people_string">People</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="observations_text">Observation(s)</string>
     <string name="design_ideas_text">Design Idea(s)</string>
@@ -202,6 +201,10 @@
     <string name="participatory_design"><a href="https://en.wikipedia.org/wiki/Participatory_design">Learn more about participatory design.</a></string>
     <string name="sitesLabel">Sites:</string>
     <string name="obs_submission_info">Each picture will be submitted as a separate Observation. Observation captions may be edited on our website.</string>
+    <string name="username">Username</string>
+    <string name="apply">Apply Changes</string>
+    <string name="affiliation">Affiliation</string>
+    <string name="bio">Bio</string>
     <!-- General -->
 
 </resources>

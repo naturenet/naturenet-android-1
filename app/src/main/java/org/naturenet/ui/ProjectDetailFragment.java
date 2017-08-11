@@ -247,7 +247,7 @@ public class ProjectDetailFragment extends Fragment {
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                goToAddObservationActivity(mProject);
+                goToAddObservationActivity(mProject, false);
             }
         });
     }
@@ -326,7 +326,7 @@ public class ProjectDetailFragment extends Fragment {
                     cameraPhoto.addToGallery();
                     setGallery();
                     imagesSelected = true;
-                    goToAddObservationActivity(mProject);
+                    goToAddObservationActivity(mProject, true);
                 }
                 break;
             case GALLERY_IMAGES:
@@ -346,14 +346,14 @@ public class ProjectDetailFragment extends Fragment {
 
                     //Here we should have our selected images
                     imagesSelected = true;
-                    goToAddObservationActivity(mProject);
+                    goToAddObservationActivity(mProject, false);
 
                 }
                 break;
             case IMAGE_PICKER_RESULTS:
                 if(resultCode == MainActivity.RESULT_OK){
                     selectedImages = data.getParcelableArrayListExtra("images");
-                    goToAddObservationActivity(mProject);
+                    goToAddObservationActivity(mProject, false);
                 }
                 break;
         }
@@ -378,8 +378,9 @@ public class ProjectDetailFragment extends Fragment {
         }
     }
 
-    private void goToAddObservationActivity(Project p){
+    private void goToAddObservationActivity(Project p, boolean fromCamera){
         Intent addObservation = new Intent(getActivity(), AddObservationActivity.class);
+        addObservation.putExtra("fromCamera", fromCamera);
         addObservation.putParcelableArrayListExtra(AddObservationActivity.EXTRA_IMAGE_PATH, selectedImages);
         addObservation.putExtra(AddObservationActivity.EXTRA_LATITUDE, MainActivity.latValue);
         addObservation.putExtra(AddObservationActivity.EXTRA_LONGITUDE, MainActivity.longValue);

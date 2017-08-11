@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FrameLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_weight="1.0"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_weight="0.66"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:orientation="vertical">
+
+    <ImageView
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        app:srcCompat="@drawable/default_avatar"
+        android:layout_marginTop="5.0dip"
+        android:id="@+id/profile_settings_user_pic"
+        android:layout_gravity="center_horizontal"/>
+
+</LinearLayout>
+
+
+    <LinearLayout
+        android:layout_weight="0.33"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:orientation="vertical">
+
+        <EditText
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:id="@+id/profile_settings_username"
+        android:hint="@string/join_et_user_name"
+        android:padding="@dimen/join_user_details_padding"
+        android:minWidth="@dimen/join_user_details_min_width"
+        style="@style/join_et_user_details"
+        android:inputType="textPersonName"
+        android:ems="10" />
+
+    <EditText
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="10dp"
+        android:id="@+id/profile_settings_bio"
+        android:inputType="textMultiLine"
+        android:layout_gravity="center_horizontal"
+        android:padding="@dimen/join_user_details_padding"
+        android:minWidth="@dimen/join_user_details_min_width"
+        android:hint="Bio"
+        style="@style/join_et_user_details"
+        android:ems="10"
+        android:maxLength="100"
+        android:scrollHorizontally="false"/>
+
+        <EditText
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            style="@style/join_et_user_details"
+            android:layout_gravity="center_horizontal"
+            android:hint="Affiliation"
+            android:padding="@dimen/join_user_details_padding"
+            android:minWidth="@dimen/join_user_details_min_width"
+            android:layout_marginTop="10dp"
+            android:focusable="false"
+            android:imeOptions="actionNone"
+            android:id="@+id/profile_settings_affiliation_spinner"/>
+
+        <Button
+            android:id="@+id/profile_settings_apply"
+            android:layout_width="@dimen/join_b_width"
+            android:layout_height="@dimen/join_b_height"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20.0dip"
+            android:text="@string/apply"
+            android:layout_marginTop="10dp"
+            style="@style/join_b_join"
+            android:textStyle="bold" />
+
+</LinearLayout>
+
+</LinearLayout>
+
+
+    <LinearLayout
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:orientation="vertical"
+    android:gravity="end|bottom|center">
+
+    <include
+        layout="@layout/dialog_add_observation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
+
+</FrameLayout>

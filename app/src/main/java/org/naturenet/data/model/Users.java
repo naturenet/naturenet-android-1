@@ -45,6 +45,9 @@ public class Users extends TimestampedData {
     @PropertyName("latest_contribution")
     public Long latestContribution;
 
+    @PropertyName("notification_token")
+    public String notificationToken;
+
     private Users() {}
 
     private Users(Parcel in) {
@@ -54,11 +57,12 @@ public class Users extends TimestampedData {
         this.affiliation = in.readString();
         this.avatar = in.readString();
         this.bio = in.readString();
+        this.notificationToken = in.readString();
         in.readMap(this.groups, null);
         this.latestContribution = in.readLong();
     }
 
-    @Override
+        @Override
     public void writeToParcel(Parcel parcel, int flags) {
         super.writeToParcel(parcel, flags);
         parcel.writeString(id);
@@ -66,6 +70,7 @@ public class Users extends TimestampedData {
         parcel.writeString(affiliation);
         parcel.writeString(avatar);
         parcel.writeString(bio);
+        parcel.writeString(notificationToken);
         parcel.writeMap(groups);
         parcel.writeLong(latestContribution == null ? 0L : latestContribution);
     }
@@ -94,6 +99,7 @@ public class Users extends TimestampedData {
         if (!affiliation.equals(users.affiliation)) return false;
         if (avatar != null ? !avatar.equals(users.avatar) : users.avatar != null) return false;
         if (bio != null ? !bio.equals(users.bio) : users.bio != null) return false;
+        if (!notificationToken.equals(users.notificationToken)) return false;
         return latestContribution != null ? latestContribution.equals(users.latestContribution) : users.latestContribution == null;
 
     }
@@ -105,6 +111,7 @@ public class Users extends TimestampedData {
         result = 31 * result + affiliation.hashCode();
         result = 31 * result + (avatar != null ? avatar.hashCode() : 0);
         result = 31 * result + (bio != null ? bio.hashCode() : 0);
+        result = 31 * result + (notificationToken != null ? notificationToken.hashCode() : 0);
         result = 31 * result + (latestContribution != null ? latestContribution.hashCode() : 0);
         return result;
     }
@@ -118,6 +125,7 @@ public class Users extends TimestampedData {
                 ", affiliation='" + affiliation + '\'' +
                 ", avatar='" + avatar + '\'' +
                 ", bio='" + bio + '\'' +
+                ", notificationToken+" + notificationToken + '\'' +
                 ", groups=" + groups +
                 ", latestContribution=" + latestContribution +
                 '}';

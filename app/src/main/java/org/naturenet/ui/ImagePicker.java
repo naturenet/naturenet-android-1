@@ -50,6 +50,11 @@ public class ImagePicker extends AppCompatActivity {
         loadedImages  = new ArrayList<>();
         selectedImages = new ArrayList<>();
         numImagesToLoad = 20;
+        boolean profilePic = false;
+
+        if(getIntent() != null){
+            profilePic = getIntent().getBooleanExtra("profile_pic", false);
+        }
 
         //prepare cursor to read images stored on phone
         prepCursor();
@@ -59,31 +64,73 @@ public class ImagePicker extends AppCompatActivity {
             final ImageGalleryAdapter adapter = new ImageGalleryAdapter(this, loadedImages);
             imageGrid.setAdapter(adapter);
 
-            imageGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            //if the user isn't searching for a profile picture, they can select as many observations as they want
+            if(!profilePic){
+                imageGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                    ImageView iv = (ImageView) view.findViewById(R.id.gallery_iv);
+                        ImageView iv = (ImageView) view.findViewById(R.id.gallery_iv);
 
-                    //if the image the user selects hasn't been selected yet
-                    if (!selectedImages.contains(loadedImages.get(i))) {
-                        //add the clicked image to the selectedImages List
-                        selectedImages.add(loadedImages.get(i));
-                        iv.setBackground(ContextCompat.getDrawable(ImagePicker.this, R.drawable.border_selected_image));
-                        adapter.addSelectedImage(i);
-                        select.setVisibility(View.VISIBLE);
-                        //here we handle the case of selecting an image that's already been selected
-                    } else if (selectedImages.contains(loadedImages.get(i))) {
-                        selectedImages.remove(loadedImages.get(i));
-                        iv.setBackgroundResource(0);
-                        adapter.removeSelectedImage(i);
+                        //if the image the user selects hasn't been selected yet
+                        if (!selectedImages.contains(loadedImages.get(i))) {
+                            //add the clicked image to the selectedImages List
+                            selectedImages.add(loadedImages.get(i));
+                            iv.setBackground(ContextCompat.getDrawable(ImagePicker.this, R.drawable.border_selected_image));
+                            adapter.addSelectedImage(i);
+                            select.setVisibility(View.VISIBLE);
+                            //here we handle the case of selecting an image that's already been selected
+                        } else if (selectedImages.contains(loadedImages.get(i))) {
+                            selectedImages.remove(loadedImages.get(i));
+                            iv.setBackgroundResource(0);
+                            adapter.removeSelectedImage(i);
+                        }
+
+                        //check to see if there are no selected images. if so, make select button 'unselectable'
+                        if(selectedImages.size() == 0)
+                            select.setVisibility(View.GONE);
                     }
+                });
+            }else{
+                //otherwise, the onClickListener must only accept one selection
+                imageGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                    //check to see if there are no selected images. if so, make select button 'unselectable'
-                    if(selectedImages.size() == 0)
-                        select.setVisibility(View.GONE);
-                }
-            });
+                        //get the imageview that was clicked
+                        ImageView iv = (ImageView) view.findViewById(R.id.gallery_iv);
+
+                        //if the user hasn't selected an image yet
+                        if(selectedImages.size() < 1){
+                            //here we store the selected image, set the background of the selected image, pass the selected image to the adapter, and make "select" button visible
+                            selectedImages.add(loadedImages.get(i));
+                            iv.setBackground(ContextCompat.getDrawable(ImagePicker.this, R.drawable.border_selected_image));
+                            adapter.addSelectedImage(i);
+                            select.setVisibility(View.VISIBLE);
+                        //if the user selects the same image, deselect it
+                        }else if(selectedImages.contains(loadedImages.get(i))){
+                            //here we clear thet selected image, make the "select" button invisible, and notify the adapter that the selected image has changed
+                            selectedImages.clear();
+                            select.setVisibility(View.GONE);
+                            adapter.removeSelectedImage(i);
+                        //or, if the user simply selects a different image
+                        }else{
+                            //save the index of the previously selected image
+                            int j = loadedImages.indexOf(selectedImages.get(0));
+                            //set that item as unselected on the UI
+                            adapter.removeSelectedImage(j);
+                            selectedImages.clear();
+
+                            //add the newly selected image, set the background to reflect selection, add the selected index to the adapter, set "select" button as visiblen
+                            selectedImages.add(loadedImages.get(i));
+                            iv.setBackground(ContextCompat.getDrawable(ImagePicker.this, R.drawable.border_selected_image));
+                            adapter.addSelectedImage(i);
+                            select.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+            }
+            
 
             /*
             Pressing the load more button increments the number of images to load by 16. We then pass this to the getUris() method.

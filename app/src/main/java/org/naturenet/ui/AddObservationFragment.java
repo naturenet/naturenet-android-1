@@ -349,7 +349,7 @@ public class AddObservationFragment extends Fragment {
         });
 
         //create adapter with images the user wants to submit
-        AddObservationImageAdapter adapter = new AddObservationImageAdapter(add, add.observationPaths);
+        AddObservationImageAdapter adapter = new AddObservationImageAdapter(add, add.observationPaths, add.fromCamera);
 
         imageFlipper.setAdapter(adapter);
         imageFlipper.setFlipInterval(4*1000);

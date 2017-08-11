@@ -36,6 +36,7 @@ public class AddObservationActivity extends AppCompatActivity {
     private Disposable mUserAuthSubscription;
     Users signed_user;
     Project p;
+    boolean fromCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class AddObservationActivity extends AppCompatActivity {
         });
 
         newObservation = new Observation();
+        fromCamera = getIntent().getBooleanExtra("fromCamera", false);
         double lat = getIntent().getDoubleExtra(EXTRA_LATITUDE, 0.0);
         double lon = getIntent().getDoubleExtra(EXTRA_LONGITUDE, 0.0);
         newObservation.location = Lists.newArrayList(lat, lon);

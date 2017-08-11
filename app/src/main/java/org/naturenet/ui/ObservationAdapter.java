@@ -28,7 +28,6 @@ public class ObservationAdapter extends FirebaseListAdapter<Observation> {
     protected void populateView(final View v, final Observation model, int position) {
         v.setTag(model);
         ViewGroup badge = (ViewGroup) v.findViewById(R.id.observation_user_badge);
-        //TODO: instead of recreating a new layout, make a Badge class and clear contents individually
         badge.removeAllViews();
         NatureNetUtils.makeUserBadge(mActivity, badge, model.userId);
         picasso.load(Strings.emptyToNull(model.data.image))

@@ -71,6 +71,7 @@ import org.naturenet.util.NatureNetUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Stack;
 
@@ -216,26 +217,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .add(R.id.fragment_container, new LaunchFragment())
                 .commit();
 
-        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
+        //click listener for when user selects profile image
+        nav_iv.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void accept(Optional<Users> user) throws Exception {
-                if (user.isPresent()) {
-                    if (signed_user == null) {
-                        onUserSignIn(user.get());
-                    }
+            public void onClick(View view) {
+                if(signed_user != null)
+                    goToProfileSettingsActivity();
+            }
+        });
 
-                    if (getFragmentManager().getBackStackEntryCount() == 0) {
-                        getFragmentManager()
-                                .beginTransaction()
-                                .add(R.id.fragment_container, ExploreFragment.newInstance(user_home_site))
-                                .commitAllowingStateLoss();
-                    }
-                } else {
-                    if (signed_user != null) {
-                        onUserSignOut();
-                    }
-                    showNoUser();
-                }
+        display_name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(signed_user != null)
+                    goToProfileSettingsActivity();
+            }
+        });
+
+        affiliation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(signed_user != null)
+                    goToProfileSettingsActivity();
             }
         });
 
@@ -309,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View v) {
                 Picasso.with(MainActivity.this).cancelTag(ImageGalleryAdapter.class.getSimpleName());
                 setGallery();
-                goToAddObservationActivity();
+                goToAddObservationActivity(false);
             }
         });
 
@@ -336,7 +339,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View v) {
 
                 if(isStoragePermitted()){
-                    setGallery();
                     select.setVisibility(View.GONE);
                     selectedImages.clear();
 
@@ -463,6 +465,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Picasso.with(MainActivity.this).resumeTag(NatureNetUtils.PICASSO_TAGS.PICASSO_TAG_GALLERY);
         selectedImages.clear();
         select.setVisibility(View.GONE);
+
+        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
+            @Override
+            public void accept(Optional<Users> user) throws Exception {
+                if (user.isPresent()) {
+
+                    onUserSignIn(user.get());
+
+                    if (getFragmentManager().getBackStackEntryCount() == 0) {
+                        getFragmentManager()
+                                .beginTransaction()
+                                .add(R.id.fragment_container, ExploreFragment.newInstance(user_home_site))
+                                .commitAllowingStateLoss();
+                    }
+                } else {
+                    if (signed_user != null) {
+                        onUserSignOut();
+                    }
+                    showNoUser();
+                }
+            }
+        });
+
         if (mGoogleApiClient.isConnected()) {
             requestLocationUpdates();
         }
@@ -514,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     *   Override back button action.
      */
     @Override
-    public void onBackPressed() {
+    public void onBackPressed() throws EmptyStackException{
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if(getFragmentManager().getBackStackEntryCount() == 0) {
@@ -522,15 +547,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if(getFragmentManager().getBackStackEntryCount() > 0){
             //we must redraw the menu
             this.invalidateOptionsMenu();
-            //store id of menu item that we will be un-highlighting
-            pastSelection = selectionStack.pop();
-            //if we still have items in our stack
-            if(selectionStack.size()>0){
-                //store the current selection
-                currentSelection = selectionStack.peek();
-            }else
-                currentSelection = 0;   //otherwise, set the current selection as 0 so we know we've reached the end of our stack
-            super.onBackPressed();
+            try{
+                //store id of menu item that we will be un-highlighting
+                pastSelection = selectionStack.pop();
+                //if we still have items in our stack
+                if(selectionStack.size()>0){
+                    //store the current selection
+                    currentSelection = selectionStack.peek();
+                }else
+                    currentSelection = 0;   //otherwise, set the current selection as 0 so we know we've reached the end of our stack
+                super.onBackPressed();
+            }catch (EmptyStackException e){
+                finish();
+            }
         }else
             super.onBackPressed();
     }
@@ -607,6 +636,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .commit();
     }
 
+    public void goToProfileSettingsActivity(){
+
+        ids = new ArrayList<>();
+        names = new ArrayList<>();
+        mFirebase.child(Site.NODE_NAME).orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    Site site = postSnapshot.getValue(Site.class);
+                    ids.add(site.id);
+                    names.add(site.name);
+                }
+                if (ids.size() != 0 && names.size() != 0) {
+                    affiliation_ids = ids.toArray(new String[ids.size()]);
+                    affiliation_names = names.toArray(new String[names.size()]);
+                    Intent settingsIntent = new Intent(MainActivity.this, UserProfileSettings.class);
+                    settingsIntent.putExtra("user", signed_user);
+                    settingsIntent.putExtra("ids", affiliation_ids);
+                    settingsIntent.putExtra("names", affiliation_names);
+                    startActivity(settingsIntent);
+                    overridePendingTransition(R.anim.slide_up, R.anim.stay);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.join_error_message_firebase_read) + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     public void goToJoinActivity() {
         ids = new ArrayList<>();
         names = new ArrayList<>();
@@ -640,9 +699,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivityForResult(login, REQUEST_CODE_LOGIN);
     }
 
-    public void goToAddObservationActivity() {
+    public void goToAddObservationActivity(boolean fromCamera) {
         Intent addObservation = new Intent(this, AddObservationActivity.class);
         addObservation.putParcelableArrayListExtra(AddObservationActivity.EXTRA_IMAGE_PATH, selectedImages);
+        addObservation.putExtra("fromCamera", fromCamera);
         addObservation.putExtra(AddObservationActivity.EXTRA_LATITUDE, latValue);
         addObservation.putExtra(AddObservationActivity.EXTRA_LONGITUDE, longValue);
         addObservation.putExtra(AddObservationActivity.EXTRA_USER, signed_user);
@@ -754,7 +814,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     selectedImages.add(Uri.fromFile(new File(cameraPhoto.getPhotoPath())));
                     cameraPhoto.addToGallery();
                     setGallery();
-                    goToAddObservationActivity();
+                    goToAddObservationActivity(true);
                 }
                 break;
             }
@@ -764,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Timber.d("Gallery Path: %s", galleryPhoto.getPath());
                     observationPath = Uri.fromFile(new File(galleryPhoto.getPath()));
                     setGallery();
-                    goToAddObservationActivity();
+                    goToAddObservationActivity(false);
                 }
                 break;
             }
@@ -786,7 +846,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
 
                     //Here we should have our selected images
-                    goToAddObservationActivity();
+                    goToAddObservationActivity(false);
                 }
                 break;
             }
@@ -794,7 +854,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case IMAGE_PICKER_RESULTS: {
                 if(resultCode == MainActivity.RESULT_OK){
                     selectedImages = data.getParcelableArrayListExtra("images");
-                    goToAddObservationActivity();
+                    goToAddObservationActivity(false);
                 }
             }
         }
@@ -851,7 +911,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         affiliation.setVisibility(View.VISIBLE);
         sign_in.setVisibility(View.GONE);
         join.setVisibility(View.GONE);
-        drawer.openDrawer(GravityCompat.START);
     }
 
     public boolean usingApiEighteenAndAbove(){

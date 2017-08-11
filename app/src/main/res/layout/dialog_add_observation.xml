@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:gravity="bottom"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@android:drawable/dialog_holo_light_frame"
         android:padding="@dimen/dialog_add_observation_ll_padding"
         android:clickable="true">
 

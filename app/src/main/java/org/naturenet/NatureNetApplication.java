@@ -38,9 +38,8 @@ public class NatureNetApplication extends MultiDexApplication {
             if (firebaseAuth.getCurrentUser() != null) {
                 final String uid = firebaseAuth.getCurrentUser().getUid();
                 Timber.i("User logged in: %s", uid);
-                Toast.makeText(getApplicationContext(),"Welcome!", Toast.LENGTH_SHORT).show();
                 FirebaseDatabase.getInstance().getReference(Users.NODE_NAME).child(uid).keepSynced(true);
-                FirebaseDatabase.getInstance().getReference(Users.NODE_NAME).child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseDatabase.getInstance().getReference(Users.NODE_NAME).child(uid).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Users user = dataSnapshot.getValue(Users.class);

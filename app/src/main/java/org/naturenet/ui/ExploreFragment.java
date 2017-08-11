@@ -187,7 +187,7 @@ public class ExploreFragment extends Fragment implements GoogleApiClient.Connect
             @Override
             public void onMapReady(GoogleMap map) {
                 googleMap = map;
-                googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 // Default to CONUS until we get location info
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40, -96), 3));
 

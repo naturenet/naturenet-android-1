@@ -2,6 +2,8 @@ package org.naturenet.util;
 
 
 import android.content.Context;
+import android.support.media.ExifInterface;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -20,6 +22,8 @@ import org.naturenet.data.model.Site;
 import org.naturenet.data.model.TimestampedData;
 import org.naturenet.data.model.Users;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -43,6 +47,50 @@ public class NatureNetUtils {
             return null;
         }
         return dateFormat.format(new Date(data.getUpdatedAtMillis()));
+    }
+
+    /**
+     * This method displays an image in the correct orientation that it was taken.
+     * @param context - The context of the image to be displayed.
+     * @param image - The ImageView where the image will be displayed.
+     * @param selectedImage - The URI of the image to be displayed.
+     * @param isProfileImage - Whether or not the image is a profile pic. If it is, it will have the cropped circle transformation. Otherwise, it will be displayed as is.
+     * @param isFromCamera - Whether or not the image is coming from the camera intent.
+     */
+    public static void showImage(Context context, ImageView image, Uri selectedImage, boolean isProfileImage, boolean isFromCamera){
+
+        Picasso p = Picasso.with(context);
+        p.setIndicatorsEnabled(false);
+
+        try {
+            //get input stream
+            InputStream stream = context.getContentResolver().openInputStream(selectedImage);
+            if(stream != null){
+                ExifInterface exifInterface = new ExifInterface(stream);
+                //get the orientation that the image was taken in
+                int rotation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                //Check to see if it's a profile image we're displaying. If so, we can use the cropped circle transformation
+                if(isProfileImage) {
+                    if(!isFromCamera)
+                        p.load(selectedImage).noFade().transform(mAvatarTransform).rotate(getOrientation(rotation)).into(image);
+                    else
+                        p.load(selectedImage).noFade().transform(mAvatarTransform).into(image);
+                }
+                else {
+                    if(!isFromCamera)
+                        p.load(selectedImage).noFade().rotate(getOrientation(rotation)).into(image);
+                    else
+                        p.load(selectedImage).noFade().into(image);
+                }
+
+                stream.close();
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void showUserAvatar(final Context context, final ImageView view, final String avatarUrl) {
@@ -102,5 +150,31 @@ public class NatureNetUtils {
                 Timber.w(databaseError.toException(), "Unable to read data for user %s", userId);
             }
         });
+    }
+
+    /**
+     * This method returns the rotation degrees based on the orientation the image was taken in.
+     * @param x - the orientation it was taken in.
+     * @return - rotate - how much to rotate the image for it to be properly displayed.
+     */
+    private static int getOrientation(int x){
+        int rotate;
+
+        switch (x){
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                rotate = 270;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                rotate = 180;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                rotate = 90;
+                break;
+            default:
+                rotate =0;
+                break;
+        }
+
+        return rotate;
     }
 }
