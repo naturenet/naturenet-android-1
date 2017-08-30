@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="org.naturenet.ui.IdeasFragment">
+             tools:context="org.naturenet.ui.ideas.IdeasFragment">
 
     <!--<include
         layout="@layout/floating_buttons"
@@ -68,4 +68,17 @@
         android:layout_alignEnd="@+id/design_ideas_lv"
         android:layout_alignLeft="@+id/design_ideas_recent_cont_title"
         android:layout_alignStart="@+id/design_ideas_recent_cont_title" />
+
+    
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 </RelativeLayout>

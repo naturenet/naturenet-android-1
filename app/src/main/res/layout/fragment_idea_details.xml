@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.naturenet.ui.IdeaDetailsFragment">
+    tools:context="org.naturenet.ui.ideas.IdeaDetailsFragment">
 
 
     <LinearLayout
@@ -63,6 +63,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/linearLayout"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -72,6 +74,8 @@
     <LinearLayout
         android:id="@+id/like_dislike_layout"
         android:layout_width="match_parent"
+        android:layout_alignLeft="@+id/design_ideas_content"
+        android:layout_alignStart="@+id/design_ideas_content"
         android:layout_marginTop="5dp"
         android:layout_height="50dp"
         android:layout_below="@+id/design_ideas_content"
@@ -97,15 +101,39 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginLeft="15dp"
+            android:visibility="gone"
             app:srcCompat="@drawable/dislikes" />
 
         <TextView
             android:id="@+id/idea_dislike_num"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
+            android:visibility="gone"
             android:gravity="center"
             android:layout_marginLeft="15dp"
             android:textColor="@color/red"/>
+
+        <TextView
+            android:id="@+id/deleteIdeaButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Delete"
+            android:layout_marginLeft="50dp"
+            android:layout_marginStart="50dp"
+            android:textStyle="bold"
+            android:textColor="@color/red"/>
+
+        <TextView
+            android:id="@+id/editIdeaButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
+            android:gravity="center"
+            android:text="Edit"
+            android:textColor="@color/colorTheme"
+            android:textStyle="bold" />
 
 
     </LinearLayout>
@@ -113,6 +141,8 @@
     <LinearLayout
         android:id="@+id/design_ideas_comments_layout"
         android:layout_width="match_parent"
+        android:layout_alignStart="@+id/design_ideas_content"
+        android:layout_alignLeft="@+id/design_ideas_content"
         android:layout_height="100dp"
         android:orientation="horizontal"
         android:layout_below="@+id/like_dislike_layout"

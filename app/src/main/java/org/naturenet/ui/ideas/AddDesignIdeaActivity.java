@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.ideas;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,8 +14,7 @@ import org.naturenet.data.model.Users;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
-public class AddProjectActivity extends AppCompatActivity {
-
+public class AddDesignIdeaActivity extends AppCompatActivity {
 
     Disposable mUserAuthSubscription;
     Users signed_user;
@@ -23,14 +22,14 @@ public class AddProjectActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_project);
+        setContentView(R.layout.activity_add_design_idea);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle(R.string.add_project_title);
+            getSupportActionBar().setTitle(R.string.add_design_idea_title);
         }
 
         //check to see if there is a signed in user
@@ -41,7 +40,14 @@ public class AddProjectActivity extends AppCompatActivity {
             }
         });
 
-        goToAddProjectFragment();
+        goToAddDesignIdeaFragment();
+    }
+
+    private void goToAddDesignIdeaFragment(){
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.add_design_idea_container, new AddDesignIdeaFragment(), AddDesignIdeaFragment.ADD_DESIGN_IDEA_FRAGMENT)
+                .commit();
     }
 
     @Override
@@ -65,10 +71,4 @@ public class AddProjectActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void goToAddProjectFragment(){
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.add_project_container, new AddProjectFragment(), AddProjectFragment.ADD_PROJECT_FRAGMENT)
-                .commit();
-    }
 }

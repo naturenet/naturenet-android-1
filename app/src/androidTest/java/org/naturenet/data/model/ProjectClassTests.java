@@ -14,12 +14,13 @@ import static org.junit.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class ProjectClassTests {
 
-    static String ID = "12345";
-    static String ICON_URL = "www.google.com";
-    static String DESCRIPTION = "description";
-    static String NAME = "trees";
-    static String STATUS = "current";
-    static long LATEST_CONTRIBUTION = 34234234234L;
+    final static String ID = "12345";
+    final static String ICON_URL = "www.google.com";
+    final static String DESCRIPTION = "description";
+    final static String NAME = "trees";
+    final static String STATUS = "current";
+    final static long LATEST_CONTRIBUTION = 34234234234L;
+    final static String SUBMITTER = "submitter";
 
     @Test
     public void test_is_project_parcelable(){
@@ -32,7 +33,7 @@ public class ProjectClassTests {
         sites.put("stuff", false);
         sites.put("bbbb", true);
 
-        Project project = new Project(ID, ICON_URL, DESCRIPTION, NAME, STATUS, LATEST_CONTRIBUTION, sites);
+        Project project = new Project(ID, ICON_URL, DESCRIPTION, NAME, STATUS, LATEST_CONTRIBUTION, sites, SUBMITTER);
 
         Parcel parcel = Parcel.obtain();
 

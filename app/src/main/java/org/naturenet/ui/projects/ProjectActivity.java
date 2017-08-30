@@ -1,38 +1,33 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import org.naturenet.R;
-import org.naturenet.data.model.Users;
+import org.naturenet.data.model.Project;
 
-public class UsersDetailActivity extends AppCompatActivity {
+public class ProjectActivity extends AppCompatActivity {
 
-    Users user;
+    public static final String EXTRA_PROJECT = "project";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_users_detail);
-        user = getIntent().getParcelableExtra(CommunitiesFragment.USER_EXTRA);
+        setContentView(R.layout.activity_project);
+        Project project = getIntent().getParcelableExtra(EXTRA_PROJECT);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle(user.displayName);
+            getSupportActionBar().setTitle(project.name);
         }
 
-        goToUsersFragment();
-    }
-
-    public void goToUsersFragment(){
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.user_details_container, new UsersDetailFragment(), UsersDetailFragment.FRAGMENT_TAG)
+        getFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, ProjectDetailFragment.newInstance(project), ProjectDetailFragment.FRAGMENT_TAG)
                 .commit();
     }
 

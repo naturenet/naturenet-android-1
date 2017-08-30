@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.communities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;

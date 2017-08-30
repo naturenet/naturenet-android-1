@@ -1,10 +1,16 @@
-package org.naturenet.ui;
+package org.naturenet.ui.ideas;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +31,13 @@ import org.naturenet.R;
 import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Site;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.LinkifiedTextView;
 import org.naturenet.util.NatureNetUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class IdeasAdapter extends ArrayAdapter<Idea> {
@@ -41,8 +50,9 @@ public class IdeasAdapter extends ArrayAdapter<Idea> {
     private Context mContext;
     private int layout;
     private List<Idea> ideas;
+    private IdeasFragment fragment;
 
-    public IdeasAdapter(Activity context, int layout, List<Idea> ideas){
+    public IdeasAdapter(Activity context, IdeasFragment fragment, int layout, List<Idea> ideas){
         super(context, layout, ideas);
         mContext = context;
         this.layout = layout;
@@ -50,6 +60,7 @@ public class IdeasAdapter extends ArrayAdapter<Idea> {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         picasso = Picasso.with(mContext);
         picasso.setIndicatorsEnabled(false);
+        this.fragment = fragment;
     }
 
     @Nullable
@@ -75,7 +86,7 @@ public class IdeasAdapter extends ArrayAdapter<Idea> {
             holder.affiliation = (TextView) convertView.findViewById(R.id.design_ideas_affiliation);
             holder.profile_pic = (ImageView) convertView.findViewById(R.id.design_ideas_user_profile_image);
             holder.username = (TextView) convertView.findViewById(R.id.design_ideas_user_name);
-            holder.ideaContent = (TextView) convertView.findViewById(R.id.design_idea_text_row);
+            holder.ideaContent = (LinkifiedTextView) convertView.findViewById(R.id.design_idea_text_row);
             holder.status = (ImageView) convertView.findViewById(R.id.design_idea_status);
             holder.likesNum = (TextView) convertView.findViewById(R.id.design_idea_likes_number);
             holder.dislikeNum = (TextView) convertView.findViewById(R.id.design_ideas_dislike_number);
@@ -91,14 +102,30 @@ public class IdeasAdapter extends ArrayAdapter<Idea> {
 
         Idea idea = ideas.get(position);
 
+        //Create SpannableString from the Idea's content.
+        SpannableString hashText = new SpannableString(idea.content);
+
+        //Create matcher to match hashtags
+        Matcher matcher = Pattern.compile("#([A-Za-z0-9_-]+)").matcher(hashText);
+
+        //Iterate over the matcher for each match.
+        while (matcher.find()) {
+            //When there is a match, set a custom click listener on each tag and change the color of the tag
+            hashText.setSpan(new ClickableSpanIdeasAdapter(hashText.subSequence(matcher.start(), matcher.end()).toString(), fragment), matcher.start(), matcher.end(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            hashText.setSpan(new ForegroundColorSpan(Color.parseColor("#F5C431")), matcher.start(), matcher.end(), 0);
+        }
+
+        //Finally, make the tags clickable and set the text in the TextView
+        holder.ideaContent.setMovementMethod(LinkMovementMethod.getInstance());
+
+        holder.ideaContent.setText(hashText, TextView.BufferType.SPANNABLE);
+        holder.ideaContent.setFocusable(false);
+
         //set profile pic, username, affiliation here
         setUserInformation(idea.submitter, holder.profile_pic, holder.username, holder.affiliation);
 
         //set idea date
         holder.ideaDate.setText(NatureNetUtils.toDateString(idea));
-
-        //set idea content here
-        holder.ideaContent.setText(ideas.get(position).content);
 
         //get like/dislike numbers and set them
         if(idea.likes!=null){
@@ -188,5 +215,25 @@ public class IdeasAdapter extends ArrayAdapter<Idea> {
     private static class ViewHolder{
         ImageView profile_pic, status;
         TextView username, affiliation, ideaContent, likesNum, dislikeNum, commentNum, ideaDate, statusText;
+    }
+}
+
+/**
+ * Custom class that extends ClickableSpan. The class overrides the onClick method and sets the clicked tag as the search.
+ */
+class ClickableSpanIdeasAdapter extends ClickableSpan{
+
+    private String text;
+    private IdeasFragment fragment;
+
+    public ClickableSpanIdeasAdapter(String t, IdeasFragment fragment) {
+        this.text = t;
+        this.fragment = fragment;
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        fragment.setSearchText(text);
     }
 }

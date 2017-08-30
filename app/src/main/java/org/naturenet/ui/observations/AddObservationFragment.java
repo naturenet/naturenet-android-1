@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.observations;
 
 import android.app.Fragment;
 import android.content.Intent;
@@ -28,6 +28,10 @@ import com.google.firebase.database.ValueEventListener;
 import org.naturenet.R;
 import org.naturenet.data.model.PhotoCaptionContent;
 import org.naturenet.data.model.Project;
+import org.naturenet.ui.LoginActivity;
+import org.naturenet.ui.communities.CommunitiesFragment;
+import org.naturenet.ui.projects.ProjectsExpandableAdapter;
+import org.naturenet.ui.projects.ProjectsExpandableSearchAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.observations;
 
 import android.app.Activity;
 import android.view.View;
@@ -18,7 +18,7 @@ public class ObservationAdapter extends FirebaseListAdapter<Observation> {
 
     Picasso picasso;
 
-    ObservationAdapter(Activity activity, Query query) {
+    public ObservationAdapter(Activity activity, Query query) {
         super(activity, Observation.class, R.layout.observation_list_item, query);
         picasso = Picasso.with(activity);
         picasso.setIndicatorsEnabled(false);

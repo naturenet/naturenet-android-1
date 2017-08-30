@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.naturenet.ui.ProjectDetailFragment">
+    tools:context="org.naturenet.ui.projects.ProjectDetailFragment">
 
     <RelativeLayout
         android:id="@+id/project_rl"
@@ -15,16 +15,21 @@
             android:layout_width="@dimen/project_iv_icon_width"
             android:layout_height="@dimen/project_iv_icon_height"
             android:layout_marginLeft="@dimen/project_margin_left"
+            android:layout_marginStart="10dp"
             android:layout_marginRight="@dimen/project_margin_right"
+            android:layout_marginEnd="10dp"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"/>
 
         <TextView
             android:id="@+id/project_tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/project_margin_left"
+            android:layout_marginStart="10dp"
             android:layout_toRightOf="@+id/project_iv_icon"
+            android:layout_toEndOf="@+id/project_iv_icon"
             android:layout_centerVertical="true"
             style="@style/project_tv_name" />
 
@@ -32,8 +37,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_marginLeft="@dimen/project_margin_left"
+            android:layout_marginStart="10dp"
             android:layout_marginRight="@dimen/project_margin_right"
+            android:layout_marginEnd="10dp"
             android:layout_centerVertical="true"
             android:orientation="horizontal">
 
@@ -42,6 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="@dimen/project_margin_right"
+                android:layout_marginEnd="10dp"
                 android:layout_gravity="center_vertical"
                 style="@style/project_tv_status" />
 
@@ -50,7 +59,9 @@
                 android:layout_width="@dimen/project_iv_status_width"
                 android:layout_height="@dimen/project_iv_status_height"
                 android:layout_marginLeft="@dimen/project_margin_left"
+                android:layout_marginStart="10dp"
                 android:layout_marginRight="@dimen/project_margin_right"
+                android:layout_marginEnd="10dp"
                 android:layout_gravity="center_vertical"
                 style="@style/project_iv_status" />
 
@@ -62,7 +73,9 @@
         android:id="@+id/project_tv_description"
         android:layout_below="@+id/project_rl"
         android:layout_marginLeft="@dimen/project_margin_left"
+        android:layout_marginStart="10dp"
         android:layout_marginRight="@dimen/project_margin_right"
+        android:layout_marginEnd="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="5"
@@ -83,6 +96,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/project_tv_recent_contributions"/>
+
+        <TextView
+            android:id="@+id/editProjectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/project_tv_recent_contributions"
+            android:layout_toEndOf="@+id/project_tv_recent_contributions"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:gravity="end"
+            android:textStyle="bold"
+            android:textColor="@color/colorTheme"
+            android:text="Edit" />
 
         <TextView
             android:id="@+id/project_tv_no_recent_contributions"
@@ -108,5 +134,17 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:scrollbars="vertical"/>
+
+    <FrameLayout
+        android:id="@+id/loadingView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 
 </RelativeLayout>

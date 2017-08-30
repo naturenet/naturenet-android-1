@@ -1,5 +1,6 @@
-package org.naturenet.ui;
+package org.naturenet.ui.ideas;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +29,8 @@ import com.google.firebase.database.ValueEventListener;
 import org.naturenet.R;
 import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.FetchData;
+import org.naturenet.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +40,7 @@ public class IdeasFragment extends Fragment {
 
     public static final String FRAGMENT_TAG = "designideas_fragment";
     public static final String IDEA_EXTRA = "idea";
+    public static final int HASH_TAG = 10;
 
     MainActivity main;
     TextView toolbar_title;
@@ -54,6 +59,7 @@ public class IdeasFragment extends Fragment {
     private View showMoreButton;
     private int numToShow;
     private boolean moreIdeasToShow;
+    private ProgressBar progressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +69,8 @@ public class IdeasFragment extends Fragment {
         toolbar_title = (TextView) main.findViewById(R.id.app_bar_main_tv);
         toolbar_title.setText(R.string.design_ideas_title_design_ideas);
         searchBar = (EditText) root.findViewById(R.id.ideasSearchBar);
+        progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
+        progressBar.setIndeterminate(true);
 
         ideas_list = (ListView) root.findViewById(R.id.design_ideas_lv);
         addIdeaButton = (FloatingActionButton) root.findViewById(R.id.fabAddIdea);
@@ -109,12 +117,14 @@ public class IdeasFragment extends Fragment {
 
                 //reverse ideas list to have the most recent first
                 Collections.reverse(ideas);
+                progressBar.setVisibility(View.GONE);
                 setIdeas();
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(main, "Could not load Ideas.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -216,7 +226,7 @@ public class IdeasFragment extends Fragment {
      * This function is called when our query for all the ideas has completed. It sets the adapter and ListView.
      */
     private void setIdeas(){
-        mAdapter = new IdeasAdapter(main, R.layout.design_ideas_row_layout, ideas.subList(0, numToShow));
+        mAdapter = new IdeasAdapter(main, this, R.layout.design_ideas_row_layout, ideas.subList(0, numToShow));
         ideas_list.setAdapter(mAdapter);
 
         //add show more button at the bottom of the list
@@ -233,7 +243,8 @@ public class IdeasFragment extends Fragment {
                     idea = mAdapter.getItem(i);  //get clicked idea
                     Intent ideaDetailIntent = new Intent(main, IdeaDetailsActivity.class);
                     ideaDetailIntent.putExtra(IDEA_EXTRA, idea);
-                    startActivity(ideaDetailIntent);
+                    //Start activity for result in case the user selects a hashtag in the details view
+                    startActivityForResult(ideaDetailIntent, HASH_TAG);
                 }
             }
         });
@@ -258,7 +269,7 @@ public class IdeasFragment extends Fragment {
                 ideas_list.removeFooterView(showMoreButton);
             }
 
-            final IdeasAdapter updatedAdapter = new IdeasAdapter(main, R.layout.design_ideas_row_layout, ideas.subList(0, numToShow));
+            final IdeasAdapter updatedAdapter = new IdeasAdapter(main, this, R.layout.design_ideas_row_layout, ideas.subList(0, numToShow));
             ideas_list.setAdapter(updatedAdapter);
             ideas_list.setSelection(numToShow);
 
@@ -271,7 +282,8 @@ public class IdeasFragment extends Fragment {
                         idea = updatedAdapter.getItem(i);   //get clicked idea
                         Intent ideaDetailIntent = new Intent(main, IdeaDetailsActivity.class);
                         ideaDetailIntent.putExtra(IDEA_EXTRA, idea);
-                        startActivity(ideaDetailIntent);
+                        //Start activity for result in case the user selects a hashtag in the details view
+                        startActivityForResult(ideaDetailIntent, HASH_TAG);
                     }
                 }
             });
@@ -279,11 +291,15 @@ public class IdeasFragment extends Fragment {
 
     }
 
+    public void setSearchText(String text) {
+        searchBar.setText(text);
+    }
+
     /**
      * This function is called after a user has entered a search query. It simply creates a new adapter for the search results and sets the adapter on the ListView.
      */
     private void setSearchResults(){
-        mAdapterSearch = new IdeasAdapter(main, R.layout.design_ideas_row_layout, searchResults);
+        mAdapterSearch = new IdeasAdapter(main, this,  R.layout.design_ideas_row_layout, searchResults);
         ideas_list.setAdapter(mAdapterSearch);
 
         ideas_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -292,7 +308,8 @@ public class IdeasFragment extends Fragment {
                 idea = mAdapterSearch.getItem(i);
                 Intent ideaDetailIntent = new Intent(main, IdeaDetailsActivity.class);
                 ideaDetailIntent.putExtra(IDEA_EXTRA, idea);
-                startActivity(ideaDetailIntent);
+                //Start activity for result in case the user selects a hashtag in the details view
+                startActivityForResult(ideaDetailIntent, HASH_TAG);
             }
         });
     }
@@ -306,4 +323,16 @@ public class IdeasFragment extends Fragment {
         return networkInfo != null && networkInfo.isConnected();
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case HASH_TAG:
+                if(resultCode == Activity.RESULT_OK){
+                    String tag = data.getStringExtra("tag");
+                    searchBar.setText(tag, TextView.BufferType.EDITABLE);
+                }
+                break;
+        }
+    }
 }

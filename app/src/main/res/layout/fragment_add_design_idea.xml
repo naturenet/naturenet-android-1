@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.naturenet.ui.AddDesignIdeaFragment">
+    tools:context="org.naturenet.ui.ideas.AddDesignIdeaFragment">
 
     <TextView
         android:id="@+id/designIdeaDescription"
@@ -31,15 +31,142 @@
         android:layout_alignParentStart="true" />
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/designIdeaDescription"
+        android:layout_alignStart="@+id/designIdeaDescription"
+        android:text="Popular Tags:"
+        android:layout_marginTop="10dp"
+        android:id="@+id/popularTags"
+        android:layout_below="@+id/design_idea_text"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/popularTags"
+        android:layout_marginTop="5dp"
+        android:id="@+id/tagLayout"
+        android:layout_alignLeft="@+id/popularTags"
+        android:layout_alignStart="@+id/popularTags">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Explore"
+            android:id="@+id/exploreTag"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Projects"
+            android:id="@+id/projectsTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#DesignIdeas"
+            android:id="@+id/designTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Communities"
+            android:id="@+id/communitiesTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Interaction"
+            android:id="@+id/interactionTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Contributions"
+            android:id="@+id/contributionsTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Map"
+            android:id="@+id/mapTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Visual"
+            android:id="@+id/visualTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Icon"
+            android:id="@+id/iconTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Menu"
+            android:id="@+id/menuTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#App"
+            android:id="@+id/appTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#Web"
+            android:id="@+id/webTag"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorAccent"/>
+
+
+    </LinearLayout>
+
+    <TextView
         android:id="@+id/ideaTypeLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/choose_idea_type"
         android:padding="3dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_below="@+id/design_idea_text"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/tagLayout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 

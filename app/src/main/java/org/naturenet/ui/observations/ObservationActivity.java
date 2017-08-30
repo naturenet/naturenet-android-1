@@ -1,9 +1,10 @@
-package org.naturenet.ui;
+package org.naturenet.ui.observations;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.GridView;
 
 import com.google.common.base.Optional;
 
@@ -14,40 +15,43 @@ import org.naturenet.data.model.Users;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
-public class AddDesignIdeaActivity extends AppCompatActivity {
+public class ObservationActivity extends AppCompatActivity {
 
-    Disposable mUserAuthSubscription;
+    public static final String EXTRA_OBSERVATION_ID = "observation";
+
+    GridView gridView;
     Users signed_user;
+    private Disposable mUserAuthSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_design_idea);
+        setContentView(R.layout.activity_observation);
+        String id = getIntent().getStringExtra(EXTRA_OBSERVATION_ID);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle(R.string.add_design_idea_title);
+            getSupportActionBar().setTitle(R.string.observation_title);
         }
 
-        //check to see if there is a signed in user
-        mUserAuthSubscription = ((NatureNetApplication) getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
+        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
             @Override
             public void accept(Optional<Users> user) throws Exception {
                 signed_user = user.isPresent() ? user.get() : null;
             }
         });
 
-        goToAddDesignIdeaFragment();
+        gridView = (GridView) findViewById(R.id.observation_gallery);
+        goToSelectedObservationFragment(id);
     }
 
-    private void goToAddDesignIdeaFragment(){
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.add_design_idea_container, new AddDesignIdeaFragment(), AddDesignIdeaFragment.ADD_DESIGN_IDEA_FRAGMENT)
-                .commit();
+    @Override
+    public void onDestroy() {
+        mUserAuthSubscription.dispose();
+        super.onDestroy();
     }
 
     @Override
@@ -71,4 +75,9 @@ public class AddDesignIdeaActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void goToSelectedObservationFragment(String id) {
+        getFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, ObservationFragment.newInstance(id), ObservationFragment.FRAGMENT_TAG)
+                .commit();
+    }
 }

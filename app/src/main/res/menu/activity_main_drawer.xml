@@ -20,6 +20,11 @@
             android:icon="@drawable/nav_communities"
             android:title="@string/nav_communities"/>
         <item
+            android:id="@+id/nav_settings"
+            android:title="Settings"
+            android:icon="@drawable/ic_settings_black_24dp"
+            />
+        <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/nav_logout"
             android:title="@string/nav_logout"/>

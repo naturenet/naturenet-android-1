@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/white"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="org.naturenet.ui.AddObservationActivity"
+    tools:context="org.naturenet.ui.observations.AddObservationActivity"
     tools:showIn="@layout/app_bar_add_observation">
 
     <FrameLayout

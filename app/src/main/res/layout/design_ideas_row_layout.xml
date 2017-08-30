@@ -110,13 +110,13 @@
                 android:layout_marginBottom="5dp"
                 android:orientation="vertical">
 
-                <TextView
+                <org.naturenet.ui.LinkifiedTextView
                     android:id="@+id/design_idea_text_row"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="66dp"
                     android:layout_marginLeft="5dp"
                     android:ellipsize="end"
-                    android:maxEms="15"
+                    android:maxEms="25"
                     android:maxLines="3"/>
 
                 <LinearLayout
@@ -143,6 +143,7 @@
                         android:layout_width="19dp"
                         android:layout_height="match_parent"
                         app:srcCompat="@drawable/dislike"
+                        android:visibility="gone"
                         android:layout_marginLeft="10dp"/>
 
                     <TextView
@@ -150,6 +151,7 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_marginLeft="10dp"
+                        android:visibility="gone"
                         android:layout_weight="1"
                         android:textColor="@color/red"
                         android:gravity="center" />

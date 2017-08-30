@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:layout_margin="10dp"
     android:id="@+id/mainLayout"
-    tools:context="org.naturenet.ui.ObservationFragment">
+    tools:context="org.naturenet.ui.observations.ObservationFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,8 +14,8 @@
             android:id="@+id/ll_observer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
             android:layout_alignParentTop="true"
+            android:layout_margin="3dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -24,9 +24,9 @@
                 android:layout_height="55dp"
                 android:layout_alignParentStart="true"
                 android:layout_gravity="center_vertical"
-                android:padding="5dp"
                 android:layout_marginLeft="5dp"
-                android:clickable="true"/>
+                android:clickable="true"
+                android:padding="5dp" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -41,10 +41,10 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:gravity="center_vertical"
-                    android:textSize="@dimen/font_size_12"
-                    android:textStyle="bold"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textColor="@color/colorTheme"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:textSize="@dimen/font_size_12"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/selected_observer_affiliation"
@@ -53,8 +53,8 @@
                     android:layout_below="@+id/selected_observer_user_name"
                     android:layout_marginBottom="3dp"
                     android:gravity="center_vertical"
-                    android:textSize="@dimen/font_size_12"
-                    android:textAppearance="?android:attr/textAppearanceLarge"/>
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textSize="@dimen/font_size_12" />
 
                 <TextView
                     android:id="@+id/selected_observeration_timestamp"
@@ -62,8 +62,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:gravity="center_vertical"
-                    android:textSize="@dimen/font_size_11"
-                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="@dimen/font_size_11" />
 
             </RelativeLayout>
 
@@ -75,81 +75,110 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/ll_observer"
             android:layout_margin="3dp"
-            android:textSize="@dimen/font_size_11"
-            android:textAppearance="?android:attr/textAppearanceSmall"/>
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="@dimen/font_size_11" />
 
         <ImageView
             android:id="@+id/selected_observation_icon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_above="@+id/editObsButton"
             android:layout_below="@+id/selected_observation_text"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="3dp"
-            android:layout_above="@+id/scroll_view" />
+            android:layout_marginTop="3dp" />
+
+        <TextView
+            android:id="@+id/deleteObsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/scroll_view"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:textStyle="bold"
+            android:textColor="@color/red"
+            android:gravity="center_vertical"
+            android:layout_toLeftOf="@+id/editObsButton"
+            android:layout_toStartOf="@+id/editObsButton"
+            android:text="Delete"
+            android:layout_below="@+id/selected_observation_icon" />
+
+        <TextView
+            android:id="@+id/editObsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/scroll_view"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:padding="3dp"
+            android:text="Edit"
+            android:textColor="@color/colorTheme"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
             android:layout_above="@+id/rl_comment"
+            android:layout_gravity="center_horizontal"
             android:fillViewport="true">
 
             <ListView
                 android:id="@+id/lv_comments"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
+                android:divider="@null"
+                android:dividerHeight="0dp"
                 android:clickable="true"
-                android:padding="3dp"
-                android:numColumns="1"
-                android:verticalSpacing="5dp"
+                android:gravity="center"
                 android:horizontalSpacing="5dp"
-                android:gravity="center" />
+                android:numColumns="1"
+                android:padding="3dp"
+                android:verticalSpacing="5dp" />
 
         </LinearLayout>
 
         <RelativeLayout
             android:id="@+id/rl_comment"
-            android:descendantFocusability="beforeDescendants"
-            android:focusableInTouchMode="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true"
             android:gravity="center">
 
             <ImageView
                 android:id="@+id/iv_like"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:padding="3dp"
                 android:clickable="true"
-                android:src="@drawable/likes"/>
+                android:padding="3dp"
+                android:src="@drawable/likes" />
 
             <EditText
                 android:id="@+id/et_comment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@+id/tv_send"
-                android:layout_toRightOf="@+id/iv_like"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:padding="5dp"
+                android:layout_toLeftOf="@+id/tv_send"
+                android:layout_toRightOf="@+id/iv_like"
+                android:background="@drawable/border_description"
+                android:clickable="true"
                 android:gravity="left"
                 android:hint="Write a comment..."
-                android:textSize="@dimen/font_size_12"
-                android:scrollHorizontally="false"
-                android:inputType="textCapSentences|textAutoCorrect|textImeMultiLine"
                 android:imeOptions="actionDone"
+                android:inputType="textCapSentences|textAutoCorrect|textImeMultiLine"
                 android:lines="2"
                 android:maxLines="5"
+                android:padding="5dp"
+                android:scrollHorizontally="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:background="@drawable/border_description"
-                android:clickable="true"/>
+                android:textSize="@dimen/font_size_12" />
 
             <TextView
                 android:id="@+id/tv_send"
@@ -158,12 +187,12 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
+                android:clickable="true"
                 android:gravity="end|center_vertical"
                 android:padding="3dp"
-                android:clickable="true"
                 android:text="Send"
-                android:textStyle="bold"
-                android:textColor="@color/colorTheme"/>
+                android:textColor="@color/colorTheme"
+                android:textStyle="bold" />
 
         </RelativeLayout>
 

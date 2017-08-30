@@ -200,11 +200,14 @@
     <string name="add_design_idea_title">Add Design Idea</string>
     <string name="participatory_design"><a href="https://en.wikipedia.org/wiki/Participatory_design">Learn more about participatory design.</a></string>
     <string name="sitesLabel">Sites:</string>
-    <string name="obs_submission_info">Each picture will be submitted as a separate Observation. Observation captions may be edited on our website.</string>
+    <string name="obs_submission_info">Each picture will be submitted as a separate Observation. Observation captions may be edited after submission.</string>
     <string name="username">Username</string>
     <string name="apply">Apply Changes</string>
     <string name="affiliation">Affiliation</string>
     <string name="bio">Bio</string>
+    <string name="myAccount">My Account</string>
+    <string name="new_project_notification_description">Send me notifications about new Projects that have been submitted.</string>
+    <string name="new_idea_notification_description">Send me notifications about new Design Ideas that have been submitted.</string>
     <!-- General -->
 
 </resources>

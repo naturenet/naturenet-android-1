@@ -4,7 +4,7 @@
     android:id="@+id/activity_users_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.naturenet.ui.UsersDetailActivity">
+    tools:context="org.naturenet.ui.communities.UsersDetailActivity">
 
     <include
         layout="@layout/app_bar_user"

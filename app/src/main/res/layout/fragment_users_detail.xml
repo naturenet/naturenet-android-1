@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.naturenet.ui.UsersDetailFragment">
+    tools:context="org.naturenet.ui.communities.UsersDetailFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -58,6 +58,7 @@
             android:layout_alignBottom="@+id/imageView2"
             android:layout_alignTop="@+id/imageView2"
             android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/imageView2"
             android:layout_toRightOf="@+id/imageView2"
             android:gravity="center"
@@ -71,6 +72,7 @@
             android:id="@+id/user_details_observation_text"
             android:gravity="center"
             android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:textColor="@color/colorButton"
             android:layout_alignBottom="@+id/user_details_obs_number"
             android:layout_toRightOf="@+id/user_details_obs_number"
@@ -83,6 +85,7 @@
             app:srcCompat="@drawable/design_ideas"
             android:layout_alignTop="@+id/user_details_observation_text"
             android:layout_toRightOf="@+id/user_details_observation_text"
+            android:layout_toEndOf="@+id/user_details_observation_text"
             android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:id="@+id/imageView3"
@@ -108,10 +111,12 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/user_details_ideas_number"
             android:layout_toRightOf="@+id/user_details_ideas_number"
+            android:layout_toEndOf="@+id/user_details_ideas_number"
             android:id="@+id/user_details_design_ideas_text"
             android:gravity="center_vertical"
             android:textColor="@color/colorButton"
             android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:layout_alignTop="@+id/user_details_ideas_number" />
 
         <ImageView
@@ -146,6 +151,7 @@
             android:gravity="center"
             android:verticalSpacing="10dp"
             android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_below="@+id/user_details_rec_obs_label"
             android:layout_marginTop="13dp"
             android:id="@+id/user_details_recent_obs"
@@ -156,5 +162,21 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="5dp"/>
 
+        <TextView
+            android:id="@+id/user_no_contributions"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            style="@style/project_tv_no_recent_contributions"/>
+
     </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/loadingViewUserDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
 </FrameLayout>

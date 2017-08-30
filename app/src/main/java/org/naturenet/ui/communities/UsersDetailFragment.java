@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.communities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,6 +24,8 @@ import com.squareup.picasso.Picasso;
 import org.naturenet.R;
 import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Observation;
+import org.naturenet.ui.observations.ObservationActivity;
+import org.naturenet.ui.observations.ObservationAdapter;
 
 
 public class UsersDetailFragment extends Fragment {
@@ -30,11 +34,12 @@ public class UsersDetailFragment extends Fragment {
 
     UsersDetailActivity detAct;
     ImageView profilePic;
-    TextView username, bio, obsNumber, ideasNumber;
+    TextView username, bio, obsNumber, ideasNumber, noContributions;
     GridView recentObservationsGrid;
     DatabaseReference fbRef;
     long obsCount = 0;
     long ideasCount = 0;
+    private ProgressBar queryProgress;
 
 
     public UsersDetailFragment() {
@@ -61,7 +66,10 @@ public class UsersDetailFragment extends Fragment {
         obsNumber = (TextView) detAct.findViewById(R.id.user_details_obs_number);
         ideasNumber = (TextView) detAct.findViewById(R.id.user_details_ideas_number);
         username = (TextView) detAct.findViewById(R.id.user_details_name);
+        queryProgress = (ProgressBar) detAct.findViewById(R.id.loadingViewUserDetails);
+        noContributions =(TextView) detAct.findViewById(R.id.user_no_contributions);
         bio = (TextView) detAct.findViewById(R.id.user_details_bio);
+
         fbRef = FirebaseDatabase.getInstance().getReference();
 
         username.setText(detAct.user.displayName);
@@ -114,7 +122,31 @@ public class UsersDetailFragment extends Fragment {
     }
 
     public void getRecentObservations(String s){
+        //Set progress bar
+        queryProgress.setVisibility(View.VISIBLE);
+
         Query obsQuery = fbRef.child(Observation.NODE_NAME).orderByChild("observer").equalTo(s).limitToLast(20);
+
+        //Set listener on query so we know if there's data or not
+        obsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //if the user has no observations
+                if(dataSnapshot.getChildrenCount() == 0)
+                    recentObservationsGrid.setEmptyView(noContributions);
+
+                //disable progress bar after query is complete
+                queryProgress.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //if an error occurs simply disable progress bar and display the empty view
+                recentObservationsGrid.setEmptyView(noContributions);
+                queryProgress.setVisibility(View.GONE);
+            }
+        });
+
         ObservationAdapter observationAdapter = new ObservationAdapter(detAct, obsQuery);
         recentObservationsGrid.setAdapter(observationAdapter);
 

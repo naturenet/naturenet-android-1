@@ -49,6 +49,8 @@ import java.util.List;
 import org.naturenet.R;
 import org.naturenet.UploadService;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.communities.CommunitiesFragment;
+import org.naturenet.ui.communities.UsersDetailActivity;
 import org.naturenet.util.CroppedCircleTransformation;
 import org.naturenet.util.NatureNetUtils;
 import timber.log.Timber;
@@ -62,7 +64,7 @@ public class UserProfileSettings extends AppCompatActivity {
     private static final int REQUEST_CODE_CAMERA = 3;
     private static final int REQUEST_CODE_GALLERY = 4;
     private EditText affiliationSpinner;
-    private TextView applyChanges;
+    private TextView applyChanges, myAccountButton;
     private EditText bio;
     private Button cameraButton;
     private CameraPhoto cameraPhoto;
@@ -121,6 +123,7 @@ public class UserProfileSettings extends AppCompatActivity {
         cameraButton = ((Button)findViewById(R.id.dialog_add_observation_b_camera));
         galleryButton = ((Button)findViewById(R.id.dialog_add_observation_b_gallery));
         gridview = ((GridView)findViewById(R.id.dialog_add_observation_gv));
+        myAccountButton = (TextView) findViewById(R.id.myAccountButton);
         pictureLayout.setVisibility(View.GONE);
 
 
@@ -172,6 +175,23 @@ public class UserProfileSettings extends AppCompatActivity {
                 });
 
                 affiliationList.show();
+            }
+        });
+
+        /**
+         * Listener for when user selects 'My Account' button.
+         */
+        myAccountButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent userIntent = new Intent(UserProfileSettings.this, UsersDetailActivity.class);
+                userIntent.putExtra(CommunitiesFragment.USER_EXTRA, signed_user);
+
+                //Make sure current user isn't null (not signed in/lost signal)
+                if(signed_user!=null){
+                    startActivity(userIntent);
+                }else
+                    Toast.makeText(UserProfileSettings.this, "Could not load account", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -300,6 +320,12 @@ public class UserProfileSettings extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+        overridePendingTransition(R.anim.stay, R.anim.slide_down);
+    }
 
     /**
      * This method sets the current values of the signed in user.

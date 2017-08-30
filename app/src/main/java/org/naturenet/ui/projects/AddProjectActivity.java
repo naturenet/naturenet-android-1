@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,48 +9,39 @@ import com.google.common.base.Optional;
 
 import org.naturenet.NatureNetApplication;
 import org.naturenet.R;
-import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Users;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
-public class IdeaDetailsActivity extends AppCompatActivity {
+public class AddProjectActivity extends AppCompatActivity {
 
-    Idea idea;
-    private Disposable mUserAuthSubscription;
+
+    Disposable mUserAuthSubscription;
     Users signed_user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_idea_details);
-
-        idea = getIntent().getParcelableExtra(IdeasFragment.IDEA_EXTRA);
+        setContentView(R.layout.activity_add_project);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle("Design Idea");
+            getSupportActionBar().setTitle(R.string.add_project_title);
         }
 
-        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
+        //check to see if there is a signed in user
+        mUserAuthSubscription = ((NatureNetApplication) getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
             @Override
             public void accept(Optional<Users> user) throws Exception {
                 signed_user = user.isPresent() ? user.get() : null;
             }
         });
 
-        goToIdeaDetailsFragment();
-    }
-
-    public void goToIdeaDetailsFragment(){
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.idea_details_container, new IdeaDetailsFragment(), IdeaDetailsFragment.IDEA_FRAGMENT_TAG)
-                .commit();
+        goToAddProjectFragment();
     }
 
     @Override
@@ -72,5 +63,12 @@ public class IdeaDetailsActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void goToAddProjectFragment(){
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.add_project_container, new AddProjectFragment(), AddProjectFragment.ADD_PROJECT_FRAGMENT)
+                .commit();
     }
 }

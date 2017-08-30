@@ -17,9 +17,9 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import org.naturenet.data.model.Idea;
-import org.naturenet.ui.IdeaDetailsActivity;
+import org.naturenet.ui.ideas.IdeaDetailsActivity;
 import org.naturenet.ui.MainActivity;
-import org.naturenet.ui.ObservationActivity;
+import org.naturenet.ui.observations.ObservationActivity;
 
 import java.util.Date;
 

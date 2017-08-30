@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.observations;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,6 +28,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.firebase.database.DataSnapshot;
@@ -46,9 +47,9 @@ import org.naturenet.data.model.Observation;
 import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Site;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.CommentsAdapter;
+import org.naturenet.ui.LoginActivity;
 import org.naturenet.util.NatureNetUtils;
-
-import java.io.File;
 
 import timber.log.Timber;
 
@@ -66,7 +67,7 @@ public class ObservationFragment extends Fragment {
     ObservationActivity o;
     Observation observation;
     ImageView observer_avatar, observation_image, like;
-    TextView observer_name, observer_affiliation, observation_timestamp, observation_text, send;
+    TextView observer_name, observer_affiliation, observation_timestamp, observation_text, send, editButton, deleteButton;
     RelativeLayout commentLayout;
     LinearLayout observer_layout;
     EditText comment;
@@ -99,6 +100,11 @@ public class ObservationFragment extends Fragment {
                 observation_text.setText(observation.data.text);
             } else {
                 observation_text.setText(R.string.no_description);
+            }
+
+            if(o.signed_user == null || !observation.userId.equals(o.signed_user.id)){
+                editButton.setVisibility(View.GONE);
+                deleteButton.setVisibility(View.GONE);
             }
 
             observation_timestamp.setText(NatureNetUtils.toDateString(observation));
@@ -207,6 +213,8 @@ public class ObservationFragment extends Fragment {
         commentLayout = (RelativeLayout) view.findViewById(R.id.rl_comment);
         comment_view = (LinearLayout) view.findViewById(R.id.scroll_view);
         observer_layout = (LinearLayout) view.findViewById(R.id.ll_observer);
+        editButton = (TextView) view.findViewById(R.id.editObsButton);
+        deleteButton = (TextView) view.findViewById(R.id.deleteObsButton);
     }
 
     //called when activity is changed to landscape mode
@@ -385,6 +393,79 @@ public class ObservationFragment extends Fragment {
                     }
 
                 }
+            }
+        });
+
+        //Handle edit button clicks.
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder editPopup = new AlertDialog.Builder(getActivity());
+                editPopup.setTitle("Edit Caption");
+
+                final EditText text = new EditText(getActivity());
+                text.setSingleLine();
+                text.setText(observation.data.text);
+                editPopup.setView(text);
+
+                editPopup.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //Update the caption in the databsae. Should reflect automatically on the UI because we've set a ValueListener which automatically syncs on data change.
+                        mRef.child("data").child("text").setValue(text.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(!task.isSuccessful()){
+                                    Toast.makeText(o, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+
+                editPopup.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+
+                editPopup.show();
+            }
+        });
+
+        //Handle delete button clicks.
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder deletePopup = new AlertDialog.Builder(getActivity());
+                deletePopup.setTitle("Delete");
+                deletePopup.setMessage("Are you sure you want to delete your Observation?");
+
+                deletePopup.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mRef.child("status").setValue("deleted").addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    Toast.makeText(o, "Observation deleted", Toast.LENGTH_SHORT).show();
+                                    o.finish();
+                                }else
+                                    Toast.makeText(o, "Could not delete observation", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+
+                deletePopup.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+
+                deletePopup.show();
             }
         });
 

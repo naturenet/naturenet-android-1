@@ -5,18 +5,19 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/PhotoUtil.jar')
     compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:animated-vector-drawable:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
-    compile 'com.google.android.gms:play-services-maps:10.2.0'
-    compile 'com.google.android.gms:play-services-plus:10.2.0'
-    compile 'com.google.android.gms:play-services-location:10.2.0'
-    compile 'com.google.firebase:firebase-core:10.2.0'
-    compile 'com.google.firebase:firebase-database:10.2.0'
-    compile 'com.google.firebase:firebase-storage:10.2.0'
-    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.google.android.gms:play-services-maps:11.2.0'
+    compile 'com.google.android.gms:play-services-plus:11.2.0'
+    compile 'com.google.android.gms:play-services-location:11.2.0'
+    compile 'com.google.firebase:firebase-core:11.2.0'
+    compile 'com.google.firebase:firebase-database:11.2.0'
+    compile 'com.google.firebase:firebase-storage:11.2.0'
+    compile 'com.google.firebase:firebase-auth:11.2.0'
     compile 'com.firebaseui:firebase-ui-database:1.1.1'
     compile 'com.firebase:geofire-android:2.1.1'
     compile 'com.google.guava:guava:20.0'
@@ -27,7 +28,7 @@ dependencies {
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compile 'io.reactivex.rxjava2:rxjava:2.0.1'
     compile 'org.ocpsoft.prettytime:prettytime:4.0.1.Final'
-    compile 'com.google.firebase:firebase-messaging:10.2.0'
+    compile 'com.google.firebase:firebase-messaging:11.2.0'
     compile 'com.android.support:exifinterface:25.3.1'
     testCompile 'org.testng:testng:6.9.12'
     testCompile 'junit:junit:4.12'
@@ -38,8 +39,9 @@ dependencies {
     androidTestCompile 'com.android.support:support-annotations:25.3.1'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support:animated-vector-drawable:25.3.1'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.0'
-    releaseCompile 'com.google.firebase:firebase-crash:10.2.0'
+    releaseCompile 'com.google.firebase:firebase-crash:11.2.0'
 }
 
 android {
@@ -55,11 +57,12 @@ android {
         applicationId "org.naturenet"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 18
-        versionName "2.3.3"
+        versionCode 19
+        versionName "2.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resValue "string", "app_version", versionName
         multiDexEnabled true
+        buildConfigField("String", "SERVER_KEY", SERVER_KEY)
     }
     buildTypes {
         debug {
@@ -84,11 +87,11 @@ android {
         exclude 'META-INF/LICENSE'
     }
     configurations.all {
-        resolutionStrategy.force 'com.android.support:support-v4:25.2.0'
-        resolutionStrategy.force 'com.android.support:appcompat-v7:25.2.0'
-        resolutionStrategy.force 'com.android.support:design:25.2.0'
-        resolutionStrategy.force 'com.android.support:recyclerview-v7:25.2.0'
-        resolutionStrategy.force 'com.android.support:support-annotations:25.2.0'
+        resolutionStrategy.force 'com.android.support:support-v4:25.3.1'
+        resolutionStrategy.force 'com.android.support:appcompat-v7:25.3.1'
+        resolutionStrategy.force 'com.android.support:design:25.3.1'
+        resolutionStrategy.force 'com.android.support:recyclerview-v7:25.3.1'
+        resolutionStrategy.force 'com.android.support:support-annotations:25.3.1'
     }
 }
 

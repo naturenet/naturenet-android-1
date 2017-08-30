@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,6 +11,8 @@ import com.squareup.picasso.Picasso;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Project;
+import org.naturenet.ui.communities.CommunitiesFragment;
+import org.naturenet.ui.communities.UsersExpandableAdapter;
 
 import java.util.HashMap;
 import java.util.List;

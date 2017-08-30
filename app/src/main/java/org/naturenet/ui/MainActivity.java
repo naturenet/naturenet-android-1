@@ -3,6 +3,7 @@ package org.naturenet.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -56,16 +57,26 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.kosalgeek.android.photoutil.CameraPhoto;
 import com.kosalgeek.android.photoutil.GalleryPhoto;
 import com.squareup.picasso.Picasso;
 
 import org.naturenet.NatureNetApplication;
 import org.naturenet.R;
+import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Observation;
 import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Site;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.communities.CommunitiesFragment;
+import org.naturenet.ui.ideas.AddDesignIdeaActivity;
+import org.naturenet.ui.ideas.IdeaDetailsActivity;
+import org.naturenet.ui.ideas.IdeasFragment;
+import org.naturenet.ui.observations.AddObservationActivity;
+import org.naturenet.ui.observations.ObservationActivity;
+import org.naturenet.ui.projects.ProjectActivity;
+import org.naturenet.ui.projects.ProjectsFragment;
 import org.naturenet.util.NatureNetUtils;
 
 import java.io.File;
@@ -91,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Observation previewSelectedObservation;
     List<String> ids, names;
     DatabaseReference mFirebase;
-    static Users signed_user;
+    public static Users signed_user;
     Site user_home_site;
     DrawerLayout drawer;
     Toolbar toolbar;
@@ -100,18 +111,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Button sign_in, join;
     TextView display_name, affiliation, licenses;
     ImageView nav_iv;
-    MenuItem logout;
+    MenuItem logout, settings;
     private Disposable mUserAuthSubscription;
     int pastSelection = 0;
     int currentSelection =0;
     Stack<Integer> selectionStack;
-    ArrayList<Users> userList;
+    public ArrayList<Users> userList;
 
     /* Common submission items */
     static final private int REQUEST_CODE_CAMERA = 3;
     static final private int REQUEST_CODE_GALLERY = 4;
     static final private int REQUEST_CODE_CHECK_LOCATION_SETTINGS = 5;
     static final private int IMAGE_PICKER_RESULTS = 6;
+    static final private int SETTINGS = 10;
     static final private int GALLERY_IMAGES = 100;
     CameraPhoto cameraPhoto;
     GalleryPhoto galleryPhoto;
@@ -125,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ImageView add_observation_cancel, gallery_item, add_observation_button;
     List<Uri> recentImageGallery;
     ArrayList<Uri> selectedImages;
-    static double latValue, longValue;
+    public static double latValue, longValue;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         logout = navigationView.getMenu().findItem(R.id.nav_logout);
+        settings = navigationView.getMenu().findItem(R.id.nav_settings);
         header = navigationView.getHeaderView(0);
         sign_in = (Button) header.findViewById(R.id.nav_b_sign_in);
         join = (Button) header.findViewById(R.id.nav_b_join);
@@ -152,9 +165,74 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         add_observation_button = (ImageView) findViewById(R.id.addObsButton);
         selectionStack = new Stack<>();
         selectedImages = new ArrayList<>();
+        mFirebase = FirebaseDatabase.getInstance().getReference();
 
         if(getSupportActionBar() != null)
             getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        //Handle the intent from Firebase Notifications.
+        if(getIntent().getExtras() != null){
+            Bundle dataBundle = getIntent().getExtras();
+            //get the parent and context
+            String parent = (String) dataBundle.get("parent");
+            String context = (String) dataBundle.get("context");
+
+            if(parent != null && context != null){
+                switch (context) {
+                    case "observations":
+                        Intent observationIntent = new Intent(MainActivity.this, ObservationActivity.class);
+                        observationIntent.putExtra("observation", parent);
+                        startActivity(observationIntent);
+                        break;
+                    case "ideas": {
+                        final Intent ideaIntent = new Intent(MainActivity.this, IdeaDetailsActivity.class);
+                        final ProgressDialog dialog;
+                        dialog = ProgressDialog.show(MainActivity.this, "Loading", "", true, false);
+                        dialog.show();
+
+                        mFirebase.child(Idea.NODE_NAME).child(parent).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Idea idea = dataSnapshot.getValue(Idea.class);
+                                ideaIntent.putExtra("idea", idea);
+                                dialog.dismiss();
+                                startActivity(ideaIntent);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                Toast.makeText(MainActivity.this, "Could not load Design Idea", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        break;
+                    }
+                    case "activities": {
+                        final Intent projectIntent = new Intent(MainActivity.this, ProjectActivity.class);
+                        final ProgressDialog dialog;
+                        dialog = ProgressDialog.show(MainActivity.this, "Loading", "", true, false);
+                        dialog.show();
+
+                        mFirebase.child(Project.NODE_NAME).child(parent).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Project project = dataSnapshot.getValue(Project.class);
+                                projectIntent.putExtra("project", project);
+                                dialog.dismiss();
+                                startActivity(projectIntent);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                Toast.makeText(MainActivity.this, "Could not load New Project", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+
+        }
 
 
         licenses.setOnClickListener(new View.OnClickListener() {
@@ -209,13 +287,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        mFirebase = FirebaseDatabase.getInstance().getReference();
         showNoUser();
 
         getFragmentManager()
                 .beginTransaction()
                 .add(R.id.fragment_container, new LaunchFragment())
                 .commit();
+
+        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
+            @Override
+            public void accept(Optional<Users> user) throws Exception {
+                if (user.isPresent()) {
+
+                    onUserSignIn(user.get());
+
+                    if (getFragmentManager().getBackStackEntryCount() == 0) {
+                        getFragmentManager()
+                                .beginTransaction()
+                                .add(R.id.fragment_container, ExploreFragment.newInstance(user_home_site))
+                                .commitAllowingStateLoss();
+                    }
+                } else {
+                    if (signed_user != null) {
+                        onUserSignOut();
+                    }
+                    showNoUser();
+                }
+            }
+        });
 
         //click listener for when user selects profile image
         nav_iv.setOnClickListener(new View.OnClickListener() {
@@ -466,28 +565,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         selectedImages.clear();
         select.setVisibility(View.GONE);
 
-        mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
-            @Override
-            public void accept(Optional<Users> user) throws Exception {
-                if (user.isPresent()) {
-
-                    onUserSignIn(user.get());
-
-                    if (getFragmentManager().getBackStackEntryCount() == 0) {
-                        getFragmentManager()
-                                .beginTransaction()
-                                .add(R.id.fragment_container, ExploreFragment.newInstance(user_home_site))
-                                .commitAllowingStateLoss();
-                    }
-                } else {
-                    if (signed_user != null) {
-                        onUserSignOut();
-                    }
-                    showNoUser();
-                }
-            }
-        });
-
         if (mGoogleApiClient.isConnected()) {
             requestLocationUpdates();
         }
@@ -591,8 +668,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_logout:
                 //set current selection as 0 so we know there isn't anything selected from the menu
                 currentSelection=0;
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            FirebaseInstanceId.getInstance().deleteInstanceId();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
                 FirebaseAuth.getInstance().signOut();
                 break;
+            case R.id.nav_settings:
+                //Go to settings screen
+                goToSettingsActivity();
+                break;
+
         }
         return true;
     }
@@ -634,6 +727,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .replace(R.id.fragment_container, new CommunitiesFragment())
                 .addToBackStack(CommunitiesFragment.FRAGMENT_TAG)
                 .commit();
+    }
+
+    public void goToSettingsActivity(){
+        Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+        settingsIntent.putExtra("token", signed_user.notificationToken);
+        startActivityForResult(settingsIntent, SETTINGS);
+        overridePendingTransition(R.anim.slide_up, R.anim.stay);
     }
 
     public void goToProfileSettingsActivity(){
@@ -771,6 +871,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     } else if (JoinActivity.EXTRA_LOGIN.equals(data.getExtras().getString(JoinActivity.EXTRA_JOIN))) {
                         signed_user = data.getParcelableExtra(JoinActivity.EXTRA_NEW_USER);
                         logout.setVisible(true);
+                        settings.setVisible(true);
                         this.supportInvalidateOptionsMenu();
 
                         if (signed_user.avatar != null) {
@@ -856,6 +957,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     selectedImages = data.getParcelableArrayListExtra("images");
                     goToAddObservationActivity(false);
                 }
+                break;
+            }
+            //Here we just handle the result of the Settings activity which isn't anything but we want to unhighlight it in the menu bar
+            case SETTINGS: {
+                navigationView.getMenu().findItem(R.id.nav_settings).setChecked(false);
+                break;
             }
         }
     }
@@ -894,6 +1001,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void showNoUser() {
         NatureNetUtils.showUserAvatar(this, nav_iv, R.drawable.default_avatar);
         logout.setVisible(false);
+        settings.setVisible(false);
         display_name.setText(null);
         affiliation.setText(null);
         display_name.setVisibility(View.GONE);
@@ -905,6 +1013,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void showUserInfo(final Users user) {
         NatureNetUtils.showUserAvatar(this, nav_iv, user.avatar);
         logout.setVisible(true);
+        settings.setVisible(true);
         display_name.setText(user.displayName);
         affiliation.setText(user_home_site.name);
         display_name.setVisibility(View.VISIBLE);

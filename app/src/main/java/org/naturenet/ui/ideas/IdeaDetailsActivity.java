@@ -1,40 +1,39 @@
-package org.naturenet.ui;
+package org.naturenet.ui.ideas;
 
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.GridView;
 
 import com.google.common.base.Optional;
 
 import org.naturenet.NatureNetApplication;
 import org.naturenet.R;
+import org.naturenet.data.model.Idea;
 import org.naturenet.data.model.Users;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
-public class ObservationActivity extends AppCompatActivity {
+public class IdeaDetailsActivity extends AppCompatActivity {
 
-    public static final String EXTRA_OBSERVATION_ID = "observation";
-
-    GridView gridView;
-    Users signed_user;
+    Idea idea;
     private Disposable mUserAuthSubscription;
+    Users signed_user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_observation);
-        String id = getIntent().getStringExtra(EXTRA_OBSERVATION_ID);
+        setContentView(R.layout.activity_idea_details);
+
+        idea = getIntent().getParcelableExtra(IdeasFragment.IDEA_EXTRA);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle(R.string.observation_title);
+            getSupportActionBar().setTitle("Design Idea");
         }
 
         mUserAuthSubscription = ((NatureNetApplication)getApplication()).getCurrentUserObservable().subscribe(new Consumer<Optional<Users>>() {
@@ -44,14 +43,14 @@ public class ObservationActivity extends AppCompatActivity {
             }
         });
 
-        gridView = (GridView) findViewById(R.id.observation_gallery);
-        goToSelectedObservationFragment(id);
+        goToIdeaDetailsFragment();
     }
 
-    @Override
-    public void onDestroy() {
-        mUserAuthSubscription.dispose();
-        super.onDestroy();
+    public void goToIdeaDetailsFragment(){
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.idea_details_container, new IdeaDetailsFragment(), IdeaDetailsFragment.IDEA_FRAGMENT_TAG)
+                .commit();
     }
 
     @Override
@@ -73,11 +72,5 @@ public class ObservationActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void goToSelectedObservationFragment(String id) {
-        getFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, ObservationFragment.newInstance(id), ObservationFragment.FRAGMENT_TAG)
-                .commit();
     }
 }

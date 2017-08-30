@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -16,6 +16,7 @@ import android.widget.AbsListView;
 
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ import com.squareup.picasso.Picasso;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Project;
+import org.naturenet.ui.MainActivity;
+import org.naturenet.ui.communities.CommunitiesFragment;
 import org.naturenet.util.NatureNetUtils;
 
 import java.util.ArrayList;
@@ -62,6 +65,8 @@ public class ProjectsFragment extends Fragment {
     private HashMap<String, List<Project>> resultsMap;
     private boolean activeSearch, isExpanded, isDataLoaded;
     private TextWatcher textWatcher;
+    private ValueEventListener projectListener;
+    private ProgressBar progressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -73,6 +78,8 @@ public class ProjectsFragment extends Fragment {
         searchBox = (EditText) root.findViewById(R.id.searchProjectText);
         mProjectsListView = (ExpandableListView) root.findViewById(R.id.projects_list);
         addProjectButton = (FloatingActionButton) root.findViewById(R.id.fabAddProject);
+        progressBar = (ProgressBar) root.findViewById(R.id.progressBarProjects);
+        progressBar.setIndeterminate(true);
 
         return root;
     }
@@ -174,6 +181,64 @@ public class ProjectsFragment extends Fragment {
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {}
         });
 
+        createSearchListener();
+        projectListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //clear the projectslist prior to checking for projects
+                projectsList.clear();
+                acesList.clear();
+                awsList.clear();
+                elseList.clear();
+                rcncList.clear();
+                totalAces = totalAws = totalElse = totalRcnc = 0;
+                numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = NUM_TO_SHOW;
+
+                //get all the projects from the snapshot
+                Project project;
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    project = data.getValue(Project.class);
+
+                    if(project.sites!= null && project.sites.size() > 0){
+                        Iterator it = project.sites.entrySet().iterator();
+
+                        while(it.hasNext()){
+                            Map.Entry pair = (Map.Entry)it.next();
+
+                            if((boolean)pair.getValue()){
+                                if(pair.getKey().equals(titles[0]))
+                                    acesList.add(project);
+                                if(pair.getKey().equals(titles[1]))
+                                    awsList.add(project);
+                                if(pair.getKey().equals(titles[2]))
+                                    elseList.add(project);
+                                if(pair.getKey().equals(titles[3]))
+                                    rcncList.add(project);
+
+                            }
+                        }
+                    }else   //if sites is null or empty simply add the project to elsewhere site
+                        elseList.add(project);
+
+                }
+
+                //set the total number of projects to these global variables
+                totalAces = acesList.size();
+                totalAws = awsList.size();
+                totalElse = elseList.size();
+                totalRcnc = rcncList.size();
+
+                progressBar.setVisibility(View.GONE);
+                setProjects(acesList, awsList, elseList, rcncList);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(main, "Could not load Projects.", Toast.LENGTH_SHORT).show();
+            }
+        };
+        dbRef.child(Project.NODE_NAME).addValueEventListener(projectListener);
     }
 
     private void setProjectSearchResults(List<Project> aces, List<Project> aws, List<Project> elsewhere, List<Project> rcnc){
@@ -297,70 +362,10 @@ public class ProjectsFragment extends Fragment {
         //If we get this far, we know we actually pulled data from Firebase. So, we set our variable to true and add a TextChangedListener to our EditText.
         isDataLoaded = true;
         searchBox.addTextChangedListener(textWatcher);
+        searchBox.getText().clear();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        //if the user isn't currently entering a search and if nothing was expanded, refresh the projects
-        if(!activeSearch && !isExpanded){
-            dbRef.child(Project.NODE_NAME).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    //clear the projectslist prior to checking for projects
-                    projectsList.clear();
-                    acesList.clear();
-                    awsList.clear();
-                    elseList.clear();
-                    rcncList.clear();
-                    totalAces = totalAws = totalElse = totalRcnc = 0;
-                    numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = NUM_TO_SHOW;
-
-                    //get all the projects from the snapshot
-                    Project project;
-                    for(DataSnapshot data : dataSnapshot.getChildren()){
-                        project = data.getValue(Project.class);
-
-                        if(project.sites!= null && project.sites.size() > 0){
-                            Iterator it = project.sites.entrySet().iterator();
-
-                            while(it.hasNext()){
-                                Map.Entry pair = (Map.Entry)it.next();
-
-                                if((boolean)pair.getValue()){
-                                    if(pair.getKey().equals(titles[0]))
-                                        acesList.add(project);
-                                    if(pair.getKey().equals(titles[1]))
-                                        awsList.add(project);
-                                    if(pair.getKey().equals(titles[2]))
-                                        elseList.add(project);
-                                    if(pair.getKey().equals(titles[3]))
-                                        rcncList.add(project);
-
-                                }
-                            }
-                        }else   //if sites is null or empty simply add the project to elsewhere site
-                            elseList.add(project);
-
-                    }
-
-                    //set the total number of projects to these global variables
-                    totalAces = acesList.size();
-                    totalAws = awsList.size();
-                    totalElse = elseList.size();
-                    totalRcnc = rcncList.size();
-
-                    setProjects(acesList, awsList, elseList, rcncList);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
-
+    private void createSearchListener(){
         //Create TextWatcher to listen for queries.
         textWatcher = new TextWatcher() {
             @Override
@@ -441,9 +446,12 @@ public class ProjectsFragment extends Fragment {
             }
         };
 
-        //Listens to any change in the search bar.
-        searchBox.addTextChangedListener(textWatcher);
+    }
 
+    @Override
+    public void onDestroyView() {
+        dbRef.child(Project.NODE_NAME).removeEventListener(projectListener);
+        super.onDestroyView();
     }
 
     @Override
@@ -454,58 +462,6 @@ public class ProjectsFragment extends Fragment {
             if(resultCode == RESULT_OK){
                 //clear the search if there was anything
                 searchBox.getText().clear();
-                dbRef.child(Project.NODE_NAME).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //clear the projectslist prior to checking for projects
-                        projectsList.clear();
-                        acesList.clear();
-                        awsList.clear();
-                        elseList.clear();
-                        rcncList.clear();
-                        totalAces = totalAws = totalElse = totalRcnc = 0;
-                        numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = NUM_TO_SHOW;
-
-                        //get all the projects from the snapshot
-                        Project project;
-                        for (DataSnapshot data : dataSnapshot.getChildren()) {
-                            project = data.getValue(Project.class);
-
-                            if (project.sites != null) {
-                                Iterator it = project.sites.entrySet().iterator();
-
-                                while (it.hasNext()) {
-                                    Map.Entry pair = (Map.Entry) it.next();
-
-                                    if ((boolean) pair.getValue()) {
-                                        if (pair.getKey().equals(titles[0]))
-                                            acesList.add(project);
-                                        if (pair.getKey().equals(titles[1]))
-                                            awsList.add(project);
-                                        if (pair.getKey().equals(titles[2]))
-                                            elseList.add(project);
-                                        if (pair.getKey().equals(titles[3]))
-                                            rcncList.add(project);
-
-                                    }
-                                }
-                            }
-                        }
-
-                        //set the total number of projects to these global variables
-                        totalAces = acesList.size();
-                        totalAws = awsList.size();
-                        totalElse = elseList.size();
-                        totalRcnc = rcncList.size();
-
-                        setProjects(acesList, awsList, elseList, rcncList);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
             }
         }
     }

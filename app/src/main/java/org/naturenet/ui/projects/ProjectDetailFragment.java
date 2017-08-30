@@ -1,7 +1,9 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -22,22 +24,36 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.kosalgeek.android.photoutil.CameraPhoto;
 import com.squareup.picasso.Picasso;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Observation;
 import org.naturenet.data.model.Project;
+import org.naturenet.ui.observations.AddObservationActivity;
+import org.naturenet.ui.ImageGalleryAdapter;
+import org.naturenet.ui.ImagePicker;
+import org.naturenet.ui.MainActivity;
+import org.naturenet.ui.observations.ObservationActivity;
+import org.naturenet.ui.observations.ObservationAdapter;
 import org.naturenet.util.NatureNetUtils;
 
 import java.io.File;
@@ -58,7 +74,7 @@ public class ProjectDetailFragment extends Fragment {
     static final private int IMAGE_PICKER_RESULTS = 6;
     static final private int GALLERY_IMAGES = 100;
 
-    private TextView mName, mStatus, mDescription, mEmpty, select;
+    private TextView mName, mStatus, mDescription, mEmpty, select, editButton;
     private ImageView mIcon, mStatusIcon;
     private GridView mGvObservations, gridview;
     private Project mProject;
@@ -69,6 +85,8 @@ public class ProjectDetailFragment extends Fragment {
     private ArrayList<Uri> selectedImages;
     private CameraPhoto cameraPhoto;
     private boolean imagesSelected = false;
+    private DatabaseReference dbRef;
+    private FrameLayout loadingView;
 
     public static ProjectDetailFragment newInstance(Project p) {
         Bundle args = new Bundle();
@@ -100,8 +118,11 @@ public class ProjectDetailFragment extends Fragment {
         gallery = (Button) getActivity().getWindow().findViewById(R.id.dialog_add_observation_b_gallery);
         select = (TextView) getActivity().getWindow().findViewById(R.id.dialog_add_observation_tv_select);
         gridview = (GridView) getActivity().getWindow().findViewById(R.id.dialog_add_observation_gv);
+        editButton = (TextView) view.findViewById(R.id.editProjectButton);
+        loadingView = (FrameLayout) view.findViewById(R.id.loadingView);
         selectedImages = new ArrayList<>();
         cameraPhoto = new CameraPhoto(getActivity());
+        dbRef = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
@@ -114,6 +135,48 @@ public class ProjectDetailFragment extends Fragment {
             return;
         }
         mProject = getArguments().getParcelable(ARG_PROJECT);
+
+        //If nobody is logged in (signed_user == null) OR the Project submitter != logged in user, hide Edit Button
+        if(MainActivity.signed_user == null || !mProject.submitter.equals(MainActivity.signed_user.id)){
+            editButton.setVisibility(View.GONE);
+        }
+
+
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder editPopup = new AlertDialog.Builder(getActivity());
+                editPopup.setTitle("Edit Project");
+
+                final EditText text = new EditText(getActivity());
+                text.setText(mDescription.getText());
+                editPopup.setView(text);
+
+                editPopup.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                       dbRef.child(Project.NODE_NAME).child(mProject.id).child("description").setValue(text.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                           @Override
+                           public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    mDescription.setText(text.getText().toString());
+                                }else
+                                    Toast.makeText(getActivity(), "Could not edit Project", Toast.LENGTH_SHORT).show();
+                           }
+                       });
+                    }
+                });
+
+                editPopup.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+
+                editPopup.show();
+            }
+        });
 
         mName.setText(mProject.name);
         dialog_add_obs.setVisibility(View.GONE);
@@ -143,11 +206,33 @@ public class ProjectDetailFragment extends Fragment {
                     .into(mIcon);
         }
 
+        //set the loading progress bar before populating the gridview with content
+        loadingView.setVisibility(View.VISIBLE);
         Query query = FirebaseDatabase.getInstance().getReference(Observation.NODE_NAME)
                 .orderByChild("activity").equalTo(mProject.id).limitToLast(20);
+
         ObservationAdapter adapter = new ObservationAdapter(getActivity(), query);
+
+        //Set a listener on our query so we know if there was any data for this Project or not
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //if there were no results
+                if(dataSnapshot.getChildrenCount() == 0)
+                    mGvObservations.setEmptyView(mEmpty);
+
+                //at this point the query is finished. disable progress bar regardless of there being data or not
+                loadingView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                loadingView.setVisibility(View.GONE);
+                mGvObservations.setEmptyView(mEmpty);
+            }
+        });
+
         mGvObservations.setAdapter(adapter);
-        mGvObservations.setEmptyView(mEmpty);
 
         mGvObservations.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override

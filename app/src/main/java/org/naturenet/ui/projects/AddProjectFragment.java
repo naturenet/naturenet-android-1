@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.projects;
 
 
 import android.app.Activity;
@@ -23,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import org.naturenet.R;
 import org.naturenet.data.model.Project;
+import org.naturenet.ui.LoginActivity;
 
 import java.util.HashMap;
 import java.util.Map;

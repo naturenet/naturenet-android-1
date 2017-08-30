@@ -2,6 +2,7 @@
 <FrameLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_weight="1.0"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
@@ -28,7 +29,20 @@
         android:id="@+id/profile_settings_user_pic"
         android:layout_gravity="center_horizontal"/>
 
-</LinearLayout>
+    </LinearLayout>
+
+        <TextView
+            android:id="@+id/myAccountButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:text="@string/myAccount"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textColor="@color/colorTheme"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="@string/myAccount" />
 
 
     <LinearLayout

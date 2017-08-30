@@ -66,7 +66,7 @@
         </service>
         <service
             android:name=".DeleteTokenService"
-            android:enabled="true"></service>
+            android:enabled="true" />
         <!-- Services -->
 
 
@@ -88,7 +88,12 @@
             android:configChanges="keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAINACTIVITY"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.LoginActivity"
             android:configChanges="keyboardHidden|screenSize"
@@ -99,7 +104,7 @@
             android:name=".ui.JoinActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.ObservationActivity"
+            android:name=".ui.observations.ObservationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".ui.MainActivity"
             android:screenOrientation="portrait">
@@ -108,7 +113,7 @@
                 android:value=".ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.AddObservationActivity"
+            android:name=".ui.observations.AddObservationActivity"
             android:parentActivityName=".ui.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
@@ -117,7 +122,7 @@
                 android:value=".ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.ProjectActivity"
+            android:name=".ui.projects.ProjectActivity"
             android:parentActivityName=".ui.MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -125,7 +130,7 @@
                 android:value=".ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.UsersDetailActivity"
+            android:name=".ui.communities.UsersDetailActivity"
             android:parentActivityName=".ui.MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -163,11 +168,12 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
-        <activity android:name=".ui.IdeaDetailsActivity" />
-        <activity android:name=".ui.AddDesignIdeaActivity" />
-        <activity android:name=".ui.AddProjectActivity" />
+        <activity android:name=".ui.ideas.IdeaDetailsActivity" />
+        <activity android:name=".ui.ideas.AddDesignIdeaActivity" />
+        <activity android:name=".ui.projects.AddProjectActivity" />
         <activity android:name=".ui.ImagePicker" />
-        <activity android:name=".ui.UserProfileSettings"></activity>
+        <activity android:name=".ui.UserProfileSettings" />
+        <activity android:name=".ui.SettingsActivity"></activity>
     </application>
 
 </manifest>

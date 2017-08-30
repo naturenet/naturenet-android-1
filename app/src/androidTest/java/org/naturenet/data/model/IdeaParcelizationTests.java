@@ -16,14 +16,16 @@ import static org.junit.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class IdeaParcelizationTests {
 
-    static String ID = "id";
-    static String CONTENT = "content";
-    static String SUBMITTER = "submitter";
+    final static String ID = "id";
+    final static String CONTENT = "content";
+    final static String SUBMITTER = "submitter";
+    final static String TYPE = "new features";
+
 
     @Test
     public void test_is_idea_parcelable(){
 
-        Idea i1 = Idea.createNew(ID, CONTENT, SUBMITTER);
+        Idea i1 = Idea.createNew(ID, CONTENT, SUBMITTER, TYPE);
 
         Parcel parcel1 = Parcel.obtain();
 

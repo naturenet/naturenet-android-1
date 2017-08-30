@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.communities;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -285,6 +285,6 @@ public class UsersExpandableAdapter extends BaseExpandableListAdapter {
     }
 
     public static class GroupViewHolder{
-        TextView groupTitle;
+        public TextView groupTitle;
     }
 }

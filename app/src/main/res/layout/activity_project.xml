@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/colorTheme"
-    tools:context="org.naturenet.ui.ProjectActivity">
+    tools:context="org.naturenet.ui.projects.ProjectActivity">
 
     <include
         layout="@layout/app_bar_project"

@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.communities;
 
 import android.content.Context;
 import android.view.LayoutInflater;

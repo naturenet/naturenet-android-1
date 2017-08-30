@@ -25,6 +25,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.naturenet.DeleteTokenService;
 import org.naturenet.R;
@@ -131,11 +132,14 @@ public class JoinActivity extends AppCompatActivity {
                                                     final UsersPrivate userPrivate = UsersPrivate.createNew(id, name);
                                                     fbRef.child(USERS).child(id).setValue(user);
                                                     fbRef.child(USERS_PRIVATE).child(id).setValue(userPrivate);
+                                                    //Subscribe user to default notifications
+                                                    FirebaseMessaging.getInstance().subscribeToTopic("activities");
+                                                    FirebaseMessaging.getInstance().subscribeToTopic("ideas");
                                                     pd.dismiss();
                                                     join.setVisibility(View.VISIBLE);
                                                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.join_success_message), Toast.LENGTH_SHORT).show();
                                                     continueAsSignedUser(user);
-                                                    //start service to delete and recreate notification token whenever a new user signs in
+                                                    //Start service to delete and recreate notification token. In this case it's actually the first time a token is created for this new user
                                                     Intent tokenIntent = new Intent(JoinActivity.this, DeleteTokenService.class);
                                                     startService(tokenIntent);
                                                 } else {

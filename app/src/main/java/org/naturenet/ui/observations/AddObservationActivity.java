@@ -1,4 +1,4 @@
-package org.naturenet.ui;
+package org.naturenet.ui.observations;
 
 import android.content.Intent;
 import android.net.Uri;

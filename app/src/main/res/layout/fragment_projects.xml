@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="org.naturenet.ui.ProjectsFragment">
+             tools:context="org.naturenet.ui.projects.ProjectsFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -40,6 +40,19 @@
             app:fabSize="auto" />
 
     </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ProgressBar
+            android:id="@+id/progressBarProjects"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 
 
 
