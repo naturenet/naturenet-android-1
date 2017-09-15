@@ -139,7 +139,6 @@
     </style>
     <style name="add_observation_et_where" parent="android:Widget.EditText">
         <item name="android:textSize">@dimen/font_size_14</item>
-        <item name="android:inputType">textShortMessage</item>
         <item name="android:background">@drawable/border_description</item>
     </style>
     <style name="add_observation_tv_project_label" parent="android:Widget.TextView">

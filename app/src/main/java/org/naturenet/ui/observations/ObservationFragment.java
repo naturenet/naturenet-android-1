@@ -85,6 +85,10 @@ public class ObservationFragment extends Fragment {
 
             if(observation == null) {
                 Timber.e("Observation %s does not exist!", mObservationId);
+                editButton.setVisibility(View.GONE);
+                deleteButton.setVisibility(View.GONE);
+                commentLayout.setVisibility(View.GONE);
+                Toast.makeText(o, R.string.no_observation, Toast.LENGTH_LONG).show();
                 return;
             }
 

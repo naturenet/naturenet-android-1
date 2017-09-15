@@ -1,5 +1,6 @@
 package org.naturenet.ui.observations;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,9 +17,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.common.collect.Lists;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,12 +54,13 @@ public class AddObservationFragment extends Fragment {
     public static final String FRAGMENT_TAG = "add_observation_fragment";
     private static final String DEFAULT_PROJECT_ID = "-ACES_a38";
     private static final int NUM_TO_SHOW = 4;
+    private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
 
 
 
 
-    private TextView send, project;
-    private EditText description, whereIsIt, searchBox;
+    private TextView send, project, clearText;
+    private EditText description, searchBox, whereIsIt;
     private AdapterViewFlipper imageFlipper;
     private Button choose;
     private ExpandableListView mProjectsListView;
@@ -74,6 +83,8 @@ public class AddObservationFragment extends Fragment {
     private boolean activeSearch;
     private Project p;
     private GestureDetector gestureDetector;
+    private ProgressBar progressBar;
+    private List<Double> currentLocation;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,6 +97,7 @@ public class AddObservationFragment extends Fragment {
 
         add = ((AddObservationActivity) getActivity());
         dbRef = FirebaseDatabase.getInstance().getReference();
+        currentLocation = add.newObservation.location;
 
         //initializations
         acesList = new ArrayList<>();
@@ -193,11 +205,6 @@ public class AddObservationFragment extends Fragment {
 
                     PhotoCaptionContent data = new PhotoCaptionContent();
                     data.text = description.getText().toString();
-                    String where = whereIsIt.getText().toString().trim();
-
-                    if (!where.isEmpty()) {
-                        add.newObservation.where = where;
-                    }
 
                     add.newObservation.data = data;
                     add.newObservation.projectId = selectedProjectId;
@@ -212,6 +219,62 @@ public class AddObservationFragment extends Fragment {
             }
         });
 
+        clearText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //clear the text
+                whereIsIt.getText().clear();
+                //reset the observation's location to what it originally was
+                add.newObservation.location = currentLocation;
+            }
+        });
+
+        //Click listener for when users try to change location
+        whereIsIt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    progressBar.setIndeterminate(true);
+                    progressBar.setVisibility(View.VISIBLE);
+                    whereIsIt.setText("");
+                    Intent placeIntent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                            .build(add);
+                    startActivityForResult(placeIntent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException e) {
+                    Toast.makeText(add, "Something went wrong loading locations.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                    progressBar.setVisibility(View.GONE);
+                    whereIsIt.setText("");
+                } catch (GooglePlayServicesNotAvailableException ex) {
+                    Toast.makeText(add, "Something went wrong loading locations.", Toast.LENGTH_SHORT).show();
+                    ex.printStackTrace();
+                    progressBar.setVisibility(View.GONE);
+                    whereIsIt.setText("");
+                }
+            }
+        });
+
+        //Add listener for when text is added
+        whereIsIt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //if something was added
+                if(editable.length()>0)
+                    clearText.setVisibility(View.VISIBLE);
+                else
+                    clearText.setVisibility(View.GONE);
+            }
+        });
 
         mProjectsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -384,9 +447,30 @@ public class AddObservationFragment extends Fragment {
 
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //This is the result of the location picker
+        if(requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
+            //remove progress bar when we're done
+            progressBar.setVisibility(View.GONE);
+            //Make sure the intent result is OK
+            if(resultCode == Activity.RESULT_OK){
+                //Get the place the user selected
+                Place place = PlaceAutocomplete.getPlace(add, data);
+                whereIsIt.setText(place.getName());
+                LatLng location = place.getLatLng();
+                add.newObservation.location = Lists.newArrayList(location.latitude, location.longitude);
+            }else{
+
+            }
+        }
+    }
+
     /*
-        This method will be called when we've retrieved all the Projects.
-     */
+            This method will be called when we've retrieved all the Projects.
+         */
     public void setProjects(ArrayList<Project> aces, ArrayList<Project> aws, ArrayList<Project> elsewhere, ArrayList<Project> rcnc) {
 
         if(aces.size()>NUM_TO_SHOW)
@@ -517,6 +601,8 @@ public class AddObservationFragment extends Fragment {
         noProjects = (TextView) view.findViewById(R.id.projecs_tv);
         projectsLayout = view.findViewById(R.id.projects_layout);
         searchBox = (EditText) view.findViewById(R.id.searchAddObs);
+        progressBar = (ProgressBar) view.findViewById(R.id.locationProgress);
+        clearText = (TextView) view.findViewById(R.id.clearText);
     }
 
 }

@@ -8,12 +8,11 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -41,6 +40,7 @@ public class SettingsActivity extends AppCompatActivity implements Settings{
     CompoundButton.OnCheckedChangeListener checkedChangeListenerProject, checkedChangeListenerIdea;
     Toolbar toolbar;
     RelativeLayout settingsLayout;
+    TextView errorLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity implements Settings{
         newIdeaSwitch = (Switch) findViewById(R.id.new_idea_switch);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         settingsLayout = (RelativeLayout) findViewById(R.id.settingsLayout);
+        errorLoading = (TextView) findViewById(R.id.couldNotLoadSettingsView);
 
         checkedChangeListenerProject = new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -123,6 +124,11 @@ public class SettingsActivity extends AppCompatActivity implements Settings{
     @Override
     public void enableWindow() {
         settingsLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void error() {
+        errorLoading.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -237,6 +243,8 @@ class RetrieveTopics extends AsyncTask<String, Void, String> {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            activity.cancelProgress(false, false);
+            activity.error();
         }
 
     }
@@ -248,4 +256,5 @@ interface Settings{
     void cancelProgress(boolean activities, boolean ideas);
     void disableWindow();
     void enableWindow();
+    void error();
 }

@@ -12,6 +12,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
     compile 'com.google.android.gms:play-services-maps:11.2.0'
+    compile 'com.google.android.gms:play-services-places:11.2.0'
     compile 'com.google.android.gms:play-services-plus:11.2.0'
     compile 'com.google.android.gms:play-services-location:11.2.0'
     compile 'com.google.firebase:firebase-core:11.2.0'
@@ -57,8 +58,8 @@ android {
         applicationId "org.naturenet"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 19
-        versionName "2.4"
+        versionCode 20
+        versionName "2.4.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resValue "string", "app_version", versionName
         multiDexEnabled true

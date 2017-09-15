@@ -89,6 +89,7 @@ public class AddProjectFragment extends Fragment {
                                 switch (i){
                                     //submit the project
                                     case DialogInterface.BUTTON_POSITIVE:
+                                        submitButton.setVisibility(View.GONE);
                                         //create node for the new Project and get the unique id
                                         DatabaseReference projectRef = dbRef.child(Project.NODE_NAME).push();
 

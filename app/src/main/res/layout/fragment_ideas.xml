@@ -5,15 +5,6 @@
              android:layout_height="match_parent"
              tools:context="org.naturenet.ui.ideas.IdeasFragment">
 
-    <!--<include
-        layout="@layout/floating_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/floating_buttons" />-->
-
     <TextView
         android:id="@+id/design_ideas_recent_cont_title"
         android:layout_width="wrap_content"

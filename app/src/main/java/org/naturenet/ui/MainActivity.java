@@ -17,6 +17,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -75,6 +76,7 @@ import org.naturenet.ui.ideas.IdeaDetailsActivity;
 import org.naturenet.ui.ideas.IdeasFragment;
 import org.naturenet.ui.observations.AddObservationActivity;
 import org.naturenet.ui.observations.ObservationActivity;
+import org.naturenet.ui.observations.ObservationGalleryFragment;
 import org.naturenet.ui.projects.ProjectActivity;
 import org.naturenet.ui.projects.ProjectsFragment;
 import org.naturenet.util.NatureNetUtils;
@@ -117,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     int currentSelection =0;
     Stack<Integer> selectionStack;
     public ArrayList<Users> userList;
+    TabLayout tabLayout;
 
     /* Common submission items */
     static final private int REQUEST_CODE_CAMERA = 3;
@@ -166,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         selectionStack = new Stack<>();
         selectedImages = new ArrayList<>();
         mFirebase = FirebaseDatabase.getInstance().getReference();
+        tabLayout = (TabLayout) findViewById(R.id.TabLayout);
 
         if(getSupportActionBar() != null)
             getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -233,6 +237,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
         }
+
+        //Set listener for the tab layout
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                //Position for the map view
+                if(tab.getPosition()==0){
+                    getFragmentManager().popBackStack();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, ExploreFragment.newInstance(user_home_site)).addToBackStack(ExploreFragment.FRAGMENT_TAG).commit();
+                }
+                //Position for the gallery view
+                else if(tab.getPosition()==1){
+                    getFragmentManager().popBackStack();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, new ObservationGalleryFragment()).addToBackStack(ObservationGalleryFragment.FRAGMENT_TAG).commit();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
 
         licenses.setOnClickListener(new View.OnClickListener() {
@@ -307,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 .add(R.id.fragment_container, ExploreFragment.newInstance(user_home_site))
                                 .commitAllowingStateLoss();
                     }
+                    tabLayout.setVisibility(View.VISIBLE);
                 } else {
                     if (signed_user != null) {
                         onUserSignOut();
@@ -631,8 +663,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(selectionStack.size()>0){
                     //store the current selection
                     currentSelection = selectionStack.peek();
-                }else
+
+                    //Check to see if we're navigating back to the explore section
+                    if(currentSelection != R.id.nav_explore)
+                        tabLayout.setVisibility(View.GONE);
+                    else {
+                        tabLayout.setVisibility(View.VISIBLE);
+                        //get the index of the fragment we're going to by pressing back
+                        int indexOfFragment = getFragmentManager().getBackStackEntryCount()-2;
+
+                        if(indexOfFragment<0)
+                            indexOfFragment = 0;
+
+                        String tag = getFragmentManager().getBackStackEntryAt(indexOfFragment).getName();
+
+                        //Check to see if it was the map view that was being displayed
+                        if(tag.equals(ExploreFragment.FRAGMENT_TAG))
+                            tabLayout.getTabAt(0).select();
+                        else if(tag.equals(ObservationGalleryFragment.FRAGMENT_TAG))
+                            tabLayout.getTabAt(1).select();
+
+                    }
+
+                }else{
                     currentSelection = 0;   //otherwise, set the current selection as 0 so we know we've reached the end of our stack
+                    //The end of the stack for logged in users is the ExploreFragment/ObservationGalleryFragment, for non logged in users its the LaunchFragment
+                    if(signed_user!=null) {
+                        tabLayout.setVisibility(View.VISIBLE);
+
+                        //get the index of the fragment we're going to by pressing back
+                        int indexOfFragment = getFragmentManager().getBackStackEntryCount()-2;
+
+                        if(indexOfFragment<0)
+                            indexOfFragment = 0;
+
+                        String tag = getFragmentManager().getBackStackEntryAt(indexOfFragment).getName();
+
+                        //Check to see if it was the map view that was being displayed
+                        if(tag.equals(ExploreFragment.FRAGMENT_TAG))
+                            tabLayout.getTabAt(0).select();
+                        else if(tag.equals(ObservationGalleryFragment.FRAGMENT_TAG))
+                            tabLayout.getTabAt(1).select();
+
+                    }
+                    else
+                        tabLayout.setVisibility(View.GONE);
+                }
                 super.onBackPressed();
             }catch (EmptyStackException e){
                 finish();
@@ -649,21 +725,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 selectionStack.add(R.id.nav_explore);
                 goToExploreFragment();
                 drawer.closeDrawer(GravityCompat.START);
+                tabLayout.setVisibility(View.VISIBLE);
+                tabLayout.getTabAt(0).select();
                 break;
             case R.id.nav_projects:
                 selectionStack.add(R.id.nav_projects);
                 goToProjectsFragment();
                 drawer.closeDrawer(GravityCompat.START);
+                tabLayout.setVisibility(View.GONE);
                 break;
             case R.id.nav_design_ideas:
                 selectionStack.add(R.id.nav_design_ideas);
                 goToDesignIdeasFragment();
                 drawer.closeDrawer(GravityCompat.START);
+                tabLayout.setVisibility(View.GONE);
                 break;
             case R.id.nav_communities:
                 selectionStack.add(R.id.nav_communities);
                 goToCommunitiesFragment();
                 drawer.closeDrawer(GravityCompat.START);
+                tabLayout.setVisibility(View.GONE);
                 break;
             case R.id.nav_logout:
                 //set current selection as 0 so we know there isn't anything selected from the menu
@@ -695,6 +776,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .beginTransaction()
                 .replace(R.id.fragment_container, new LaunchFragment())
                 .commit();
+        tabLayout.setVisibility(View.GONE);
     }
 
     public void goToExploreFragment() {

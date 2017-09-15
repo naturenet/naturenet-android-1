@@ -97,29 +97,69 @@
                 android:imeOptions="actionDone"
                 style="@style/add_observation_et_description" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/add_observation_tv_height"
-                android:gravity="left|center_vertical"
+                android:layout_height="30dp"
+                android:gravity="start|center_vertical"
                 android:layout_marginTop="@dimen/add_observation_margin_top"
+                android:layout_marginStart="@dimen/add_observation_margin_left"
                 android:layout_marginLeft="@dimen/add_observation_margin_left"
                 android:layout_marginRight="@dimen/add_observation_margin_right"
-                android:layout_marginBottom="@dimen/add_observation_margin_bottom"
-                style="@style/add_observation_tv_where" />
+                android:layout_marginEnd="@dimen/add_observation_margin_right"
+                android:layout_marginBottom="@dimen/add_observation_margin_bottom">
 
-            <EditText
-                android:id="@+id/add_observation_et_where"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="start|center_vertical"
+                    style="@style/add_observation_tv_where" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/clearText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="start|center_vertical"
+                    android:text="@string/clear_text"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+
+
+
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginLeft="@dimen/add_observation_margin_left"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginRight="@dimen/add_observation_margin_right"
-                android:gravity="left"
-                android:padding="5dp"
-                android:inputType="textCapSentences"
-                android:imeOptions="actionDone"
-                android:maxLines="1"
-                android:hint="(Optional)"
-                style="@style/add_observation_et_where" />
+                android:gravity="start">
+
+                <EditText
+                    android:id="@+id/add_observation_et_where"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="start"
+                    android:padding="5dp"
+                    android:focusable="false"
+                    android:hint="(Optional)"
+                    style="@style/add_observation_et_where"
+                    />
+
+                <ProgressBar
+                    android:id="@+id/locationProgress"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="29dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"/>
+
+            </FrameLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
