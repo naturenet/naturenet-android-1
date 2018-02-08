@@ -1110,12 +1110,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private boolean isStoragePermitted(){
 
-        boolean isPermissionGiven = false;
+        boolean isPermissionGiven = true;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                     this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
                 isPermissionGiven = true;
+            }
+            else {
+                isPermissionGiven = false;
             }
         }
 
