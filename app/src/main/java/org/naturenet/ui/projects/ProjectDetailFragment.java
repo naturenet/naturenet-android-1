@@ -470,7 +470,7 @@ public class ProjectDetailFragment extends Fragment {
         addObservation.putExtra(AddObservationActivity.EXTRA_LATITUDE, MainActivity.latValue);
         addObservation.putExtra(AddObservationActivity.EXTRA_LONGITUDE, MainActivity.longValue);
         addObservation.putExtra(AddObservationActivity.EXTRA_USER, MainActivity.signed_user);
-        addObservation.putExtra(AddObservationActivity.EXTRA_PROJECT, p);
+        addObservation.putExtra(AddObservationActivity.EXTRA_PROJECT, (android.os.Parcelable) p);
         startActivity(addObservation);
     }
 

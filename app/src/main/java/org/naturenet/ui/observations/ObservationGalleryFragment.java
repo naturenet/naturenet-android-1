@@ -11,6 +11,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.DataSnapshot;
@@ -44,6 +45,8 @@ public class ObservationGalleryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         main = ((MainActivity) getActivity());
+        TextView toolbar_title = (TextView) main.findViewById(R.id.app_bar_main_tv);
+        toolbar_title.setText(R.string.nav_explore);
 
         return inflater.inflate(R.layout.fragment_observation_gallery, container, false);
     }

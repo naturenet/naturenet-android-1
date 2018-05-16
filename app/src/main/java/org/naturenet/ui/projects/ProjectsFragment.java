@@ -38,6 +38,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -106,8 +110,9 @@ public class ProjectsFragment extends Fragment {
         isExpanded = false;
         isDataLoaded = false;
 
-        if(!isConnectedToInternet())
+        if(!isConnectedToInternet()) {
             Toast.makeText(main, R.string.no_network, Toast.LENGTH_SHORT).show();
+        }
 
         mProjectsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -185,14 +190,15 @@ public class ProjectsFragment extends Fragment {
         projectListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //clear the projectslist prior to checking for projects
+
+                totalAces = totalAws = totalElse = totalRcnc = 0;
+                numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = NUM_TO_SHOW;
+
                 projectsList.clear();
                 acesList.clear();
                 awsList.clear();
                 elseList.clear();
                 rcncList.clear();
-                totalAces = totalAws = totalElse = totalRcnc = 0;
-                numToShowAces = numToShowAws = numToShowElse = numToShowRcnc = NUM_TO_SHOW;
 
                 //get all the projects from the snapshot
                 Project project;
@@ -234,8 +240,7 @@ public class ProjectsFragment extends Fragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(main, "Could not load Projects.", Toast.LENGTH_SHORT).show();
+
             }
         };
         dbRef.child(Project.NODE_NAME).addValueEventListener(projectListener);

@@ -3,7 +3,7 @@ package org.naturenet;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDexApplication;
 import android.widget.Toast;
-
+import android.content.Context;
 import com.google.common.base.Optional;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -24,13 +24,17 @@ import timber.log.Timber;
 
 public class NatureNetApplication extends MultiDexApplication {
 
-    private boolean mIsConnected = false;
+    private static boolean mIsConnected = false;
+
+    private static Context appContext;
 
     private final BehaviorSubject<Optional<Users>>  usersBehaviorSubject = BehaviorSubject.create();
 
     public Observable<Optional<Users>> getCurrentUserObservable() {
         return usersBehaviorSubject;
     }
+
+    public static Context getAppContext() { return NatureNetApplication.appContext; }
 
     private FirebaseAuth.AuthStateListener mAuthStateListener = new FirebaseAuth.AuthStateListener() {
         @Override
@@ -70,15 +74,31 @@ public class NatureNetApplication extends MultiDexApplication {
         super.onCreate();
         Timber.plant(new ForestFire());
         Picasso.with(this).setIndicatorsEnabled(BuildConfig.DEBUG);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         FirebaseDatabase.getInstance().setLogLevel(BuildConfig.DEBUG ? Logger.Level.DEBUG : Logger.Level.NONE);
         FirebaseDatabase.getInstance().getReference(Site.NODE_NAME).keepSynced(true);
         FirebaseDatabase.getInstance().getReference(Project.NODE_NAME).keepSynced(true);
         FirebaseAuth.getInstance().addAuthStateListener(mAuthStateListener);
 
+        NatureNetApplication.appContext = getApplicationContext();
+
         FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mIsConnected = (boolean)dataSnapshot.getValue();
+                if (mIsConnected) {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try  {
+                                UploadService.UploadRemainingImages();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    thread.start();
+                }
             }
 
             @Override
@@ -89,7 +109,7 @@ public class NatureNetApplication extends MultiDexApplication {
         });
     }
 
-    public boolean isConnected() {
+    public static boolean isConnected() {
         return mIsConnected;
     }
 }

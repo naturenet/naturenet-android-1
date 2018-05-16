@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,7 +51,7 @@ import org.naturenet.data.model.Users;
 import org.naturenet.ui.CommentsAdapter;
 import org.naturenet.ui.LoginActivity;
 import org.naturenet.util.NatureNetUtils;
-
+import java.io.File;
 import timber.log.Timber;
 
 public class ObservationFragment extends Fragment {
@@ -92,13 +93,25 @@ public class ObservationFragment extends Fragment {
                 return;
             }
 
-            Picasso.with(getActivity())
-                    .load(Strings.emptyToNull(observation.data.image))
-                    .placeholder(R.drawable.default_image)
-                    .error(R.drawable.no_image)
-                    .fit()
-                    .centerInside()
-                    .into(observation_image);
+            if (observation.data.image.startsWith("http")) {
+                Picasso.with(getActivity())
+                        .load(Strings.emptyToNull(observation.data.image))
+                        .placeholder(R.drawable.default_image)
+                        .error(R.drawable.no_image)
+                        .fit()
+                        .centerInside()
+                        .into(observation_image);
+            } else {
+                File f = new File(Environment.getExternalStorageDirectory() + "/" +
+                        Environment.DIRECTORY_PICTURES + "/" + observation.data.image);
+                Picasso.with(getActivity())
+                        .load(f)
+                        .placeholder(R.drawable.default_image)
+                        .error(R.drawable.no_image)
+                        .fit()
+                        .centerInside()
+                        .into(observation_image);
+            }
 
             if (observation.data.text != null) {
                 observation_text.setText(observation.data.text);

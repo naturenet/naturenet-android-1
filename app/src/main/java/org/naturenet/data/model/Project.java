@@ -10,10 +10,11 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
 
+import java.io.Serializable;
 import java.util.Map;
 
 @IgnoreExtraProperties
-public class Project extends TimestampedData implements Parcelable {
+public class Project extends TimestampedData implements Parcelable, Serializable {
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     Project(String id, String iconUrl, String description, String name,  String status, Long latestContribution, Map<String, Boolean> sites, String submitter) {

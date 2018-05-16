@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Project project = dataSnapshot.getValue(Project.class);
-                                projectIntent.putExtra("project", project);
+                                projectIntent.putExtra("project", (android.os.Parcelable) project);
                                 dialog.dismiss();
                                 startActivity(projectIntent);
                             }
@@ -286,6 +286,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         add_observation_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                try {
+                    startActivityForResult(cameraPhoto.takePhotoIntent(), REQUEST_CODE_CAMERA);
+                } catch (Exception ex) {
+                    Toast.makeText(MainActivity.this, "Something is wrong while taking a photo.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        add_observation_button.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_GALLERY);
                 } else {
@@ -293,7 +305,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 select.setVisibility(View.GONE);
-                dialog_add_observation.setVisibility(View.VISIBLE);            }
+                dialog_add_observation.setVisibility(View.VISIBLE);
+
+                return true;
+            }
         });
 
         sign_in.setOnClickListener(new View.OnClickListener() {
@@ -900,7 +915,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void goToProjectActivity(Project p) {
         Intent project = new Intent(this, ProjectActivity.class);
-        project.putExtra(ProjectActivity.EXTRA_PROJECT, p);
+        project.putExtra(ProjectActivity.EXTRA_PROJECT, (android.os.Parcelable)p);
         startActivity(project);
         overridePendingTransition(R.anim.slide_up, R.anim.stay);
     }

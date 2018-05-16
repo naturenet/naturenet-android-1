@@ -172,6 +172,11 @@ public class ExploreFragment extends Fragment implements GoogleApiClient.Connect
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        main = ((MainActivity) getActivity());
+        TextView toolbar_title = (TextView) main.findViewById(R.id.app_bar_main_tv);
+        toolbar_title.setText(R.string.nav_explore);
+
         View v = inflater.inflate(R.layout.fragment_explore, container, false);
         mMapView = (MapView) v.findViewById(R.id.map_view);
         mMapView.onCreate(savedInstanceState);

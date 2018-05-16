@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
+import android.content.Context;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -37,8 +38,13 @@ import org.naturenet.data.model.Users;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import timber.log.Timber;
 
@@ -78,30 +84,6 @@ public class UploadService extends IntentService {
             //initialize targets ArrayList
             targets = new ArrayList<>();
             uploadObservation();
-        }else {
-            profilePicUri = intent.getParcelableExtra("profile_pic");
-            userId = intent.getStringExtra("id");
-            targets = new ArrayList<>();
-            isProfilePic = true;
-            uploadProfilePic();
-        }
-
-    }
-
-
-    private void uploadProfilePic(){
-
-        final Map<String, String> config = Maps.newHashMap();
-        config.put("cloud_name", "university-of-colorado");
-        Cloudinary cloudinary = new Cloudinary(config);
-
-        //Try to upload the image to Cloudinary. In case this isn't possible, upload to Firebase Storage.
-        try {
-            Map results = cloudinary.uploader().unsignedUpload(getContentResolver().openInputStream(profilePicUri), "android-preset", ObjectUtils.emptyMap());
-            continueWithCloudinaryUpload(results);
-        } catch (IOException ex) {
-            Timber.w(ex, "Failed to upload image to Cloudinary");
-            uploadImageWithFirebase(profilePicUri, 0);
         }
     }
 
@@ -117,21 +99,17 @@ public class UploadService extends IntentService {
                 }
             });
 
-            //for each observation uri, we loop and upload the image to either Cloudinary or Firebase
-            for(int j=0; j<observationUris.size(); j++){
-                final Map<String, String> config = Maps.newHashMap();
-                config.put("cloud_name", "university-of-colorado");
-                Cloudinary cloudinary = new Cloudinary(config);
+            Map<String, String> observationImages = Maps.newHashMap();
+            for(int j=0; j<observationUris.size(); j++) {
+                String oid = writeObservationToFirebase(observationUris.get(j));
+                observationImages.put(oid, observationUris.get(j).toString());
+            }
 
-                //Try to upload the image to Cloudinary. In case this isn't possible, upload to Firebase Storage.
-                try {
-                    Map results = cloudinary.uploader().unsignedUpload(getContentResolver().openInputStream(observationUris.get(j)), "android-preset", ObjectUtils.emptyMap());
-                    continueWithCloudinaryUpload(results);
-                    targets.add(null);
-                } catch (IOException ex) {
-                    Timber.w(ex, "Failed to upload image to Cloudinary");
-                    uploadImageWithFirebase(observationUris.get(j), j);
-                }
+            // append observationImages to file
+            appendToObservationImages(observationImages);
+
+            if (NatureNetApplication.isConnected()) {
+                UploadRemainingImages();
             }
 
         } else {
@@ -145,92 +123,11 @@ public class UploadService extends IntentService {
         }
     }
 
-    private void continueWithCloudinaryUpload(Map results) {
-        Timber.i("Image uploaded to Cloudinary as %s", results.get("public_id"));
-        writeObservationToFirebase((String)results.get("secure_url"));
-    }
-
-    private void uploadImageWithFirebase(final Uri uri, final int targetIndex) {
-        Timber.i("Attempting upload to Firebase");
-
-        targets.add(new Target() {
-
-            final StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("photos").child(UUID.randomUUID().toString());
-
-            @Override
-            public int hashCode() {
-                return uri.hashCode();
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                return (obj != null) && (obj instanceof Target) && uri.equals(obj);
-            }
-
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                Timber.d("Bitmap loaded; uploading data stream to Firebase");
-                final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
-                byte[] data = stream.toByteArray();
-                continueWithFirebaseUpload(storageRef.putBytes(data));
-            }
-
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                Timber.e("Could not load bitmap; uploading original file to Firebase");
-                continueWithFirebaseUpload(storageRef.putFile(uri));
-            }
-
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
-                Timber.d("Loading raw bitmap data from %s", uri.getPath());
-            }
-        });
-
-        if(targets.get(targetIndex) != null){
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Picasso.with(UploadService.this)
-                            .load(uri)
-                            .resize(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
-                            .centerInside()
-                            .onlyScaleDown()
-                            .priority(Picasso.Priority.HIGH)
-                            .into(targets.get(targetIndex));
-                }
-            });
-        }
-
-    }
-
-    private void continueWithFirebaseUpload(UploadTask uploadTask) {
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                UploadService.this.writeObservationToFirebase(taskSnapshot.getDownloadUrl().toString());
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception ex) {
-                        Timber.w(ex, "Image upload task failed: %s", ex.getMessage());
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(UploadService.this, getString(R.string.image_upload_error), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                });
-    }
-
-    private void writeObservationToFirebase(String imageUrl) {
+    private String writeObservationToFirebase(Uri localPath) {
         if(!isProfilePic){
             final String id = mDatabase.getReference(Observation.NODE_NAME).push().getKey();
             mObservation.id = id;
-            mObservation.data.image = imageUrl;
+            mObservation.data.image = localPath.getLastPathSegment();
             mDatabase.getReference(Observation.NODE_NAME).child(id).setValue(mObservation, new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -255,14 +152,85 @@ public class UploadService extends IntentService {
                     }
                 }
             });
-        }else{
-            mDatabase.getReference(Users.NODE_NAME).child(userId).child("avatar").setValue(imageUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    Toast.makeText(UploadService.this, "Profile picture updated.", Toast.LENGTH_SHORT).show();
-                }
-            });
+            return id;
         }
+        return "";
+    }
 
+    public static void UploadRemainingImages() {
+        // read the list of remaining images
+        Map<String, String> observationImages = readObservationImages();
+        // for each remaining image try to upload to cloudinary; if successful remove it from the list
+        Object[] ids = observationImages.keySet().toArray();
+        if (ids.length == 0) { return; }
+        for (int i = 0;i<ids.length;i++) {
+            if (uploadToCloudinary((String)ids[i], observationImages.get(ids[i]))) {
+                observationImages.remove(ids[i]);
+            }
+        }
+        // write the new list of observation images to file
+        writeObservationImages(observationImages);
+    }
+
+    private static boolean uploadToCloudinary(String observationId, String observationImage) {
+        final Map<String, String> config = Maps.newHashMap();
+        config.put("cloud_name", "university-of-colorado");
+        Cloudinary cloudinary = new Cloudinary(config);
+
+        try {
+            Map results = cloudinary.uploader().unsignedUpload(NatureNetApplication.getAppContext().getContentResolver().openInputStream(Uri.parse(observationImage)),
+                    "android-preset", ObjectUtils.emptyMap());
+            if (results.containsKey("secure_url")) {
+                updateObservationImageUrl(observationId, (String)results.get("secure_url"));
+                return true;
+            }
+        } catch (IOException ex) {
+            Timber.w(ex, "Failed to upload image to Cloudinary");
+        }
+        return false;
+    }
+
+    private static void updateObservationImageUrl(String observationId, String url) {
+        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference(Observation.NODE_NAME).child(observationId);
+        mRef.child("data").child("image").setValue(url).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(!task.isSuccessful()){
+                    //Toast.makeText(o, "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private static Map<String, String> readObservationImages() {
+        Map<String, String> observationImages = Maps.newHashMap();
+        try {
+            FileInputStream fis =  NatureNetApplication.getAppContext().openFileInput("observationImages");
+            ObjectInputStream is = new ObjectInputStream(fis);
+            observationImages = (Map<String, String>) is.readObject();
+            is.close();
+            fis.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return observationImages;
+    }
+
+    private static void writeObservationImages(Map<String, String> observationImages) {
+        try {
+            FileOutputStream fos = NatureNetApplication.getAppContext().openFileOutput("observationImages", Context.MODE_PRIVATE);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(observationImages);
+            os.close();
+            fos.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static void appendToObservationImages(Map<String, String> observationImages) {
+        Map<String, String> currentObsImgs = readObservationImages();
+        currentObsImgs.putAll(observationImages);
+        writeObservationImages(currentObsImgs);
     }
 }

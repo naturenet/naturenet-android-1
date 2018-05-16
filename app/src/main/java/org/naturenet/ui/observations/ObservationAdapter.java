@@ -1,6 +1,7 @@
 package org.naturenet.ui.observations;
 
 import android.app.Activity;
+import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -13,6 +14,8 @@ import com.squareup.picasso.Picasso;
 import org.naturenet.R;
 import org.naturenet.data.model.Observation;
 import org.naturenet.util.NatureNetUtils;
+
+import java.io.File;
 
 public class ObservationAdapter extends FirebaseListAdapter<Observation> {
 
@@ -30,13 +33,25 @@ public class ObservationAdapter extends FirebaseListAdapter<Observation> {
         ViewGroup badge = (ViewGroup) v.findViewById(R.id.observation_user_badge);
         badge.removeAllViews();
         NatureNetUtils.makeUserBadge(mActivity, badge, model.userId);
-        picasso.load(Strings.emptyToNull(model.data.image))
-                .placeholder(R.drawable.default_image)
-                .error(R.drawable.no_image)
-                .fit()
-                .centerCrop()
-                .tag(NatureNetUtils.PICASSO_TAGS.PICASSO_TAG_OBSERVATION_LIST)
-                .into((ImageView) v.findViewById(R.id.observation_icon));
+        if (model.data.image.startsWith("http")) {
+            picasso.load(Strings.emptyToNull(model.data.image))
+                    .placeholder(R.drawable.default_image)
+                    .error(R.drawable.no_image)
+                    .fit()
+                    .centerCrop()
+                    .tag(NatureNetUtils.PICASSO_TAGS.PICASSO_TAG_OBSERVATION_LIST)
+                    .into((ImageView) v.findViewById(R.id.observation_icon));
+        } else {
+            File f = new File(Environment.getExternalStorageDirectory() + "/" +
+                    Environment.DIRECTORY_PICTURES + "/" + model.data.image);
+            picasso.load(f)
+                    .placeholder(R.drawable.default_image)
+                    .error(R.drawable.no_image)
+                    .fit()
+                    .centerCrop()
+                    .tag(NatureNetUtils.PICASSO_TAGS.PICASSO_TAG_OBSERVATION_LIST)
+                    .into((ImageView) v.findViewById(R.id.observation_icon));
+        }
     }
 
     @Override

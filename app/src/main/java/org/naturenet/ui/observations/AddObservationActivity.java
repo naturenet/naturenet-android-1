@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.support.design.widget.TabLayout;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -17,6 +18,7 @@ import org.naturenet.UploadService;
 import org.naturenet.data.model.Observation;
 import org.naturenet.data.model.Project;
 import org.naturenet.data.model.Users;
+import org.naturenet.ui.MainActivity;
 
 import java.util.ArrayList;
 
